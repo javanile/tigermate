@@ -1,4 +1,4 @@
-# tigermate
+# Tigermate
 
 ```php
 <?php
