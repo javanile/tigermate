@@ -4,3 +4,6 @@
 >modules/Tigermate
 
 !docker-compose.yml
+
+src/*
+autoload.php
