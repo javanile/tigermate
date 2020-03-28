@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<module>
+    <name>Tigermate</name>
+    <label>Tigermate</label>
+    <type>extension</type>
+    <version>0.1.0</version>
+    <dependencies>
+        <vtiger_version>7.0.0</vtiger_version>
+        <vtiger_max_version>7.*</vtiger_max_version>
+    </dependencies>
+    <license>
+        <file>LICENSE</file>
+    </license>
+</module>

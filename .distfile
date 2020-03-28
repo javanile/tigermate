@@ -1,0 +1,6 @@
+
+@dist/Tigermate.zip
+
+>modules/Tigermate
+
+!docker-compose.yml
