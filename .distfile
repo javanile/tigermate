@@ -1,9 +1,11 @@
 
 @dist/Tigermate.zip
 
->modules/Tigermate
+manifest.xml
+LICENSE
 
-!docker-compose.yml
+>modules/Tigermate
 
 src/*
 autoload.php
+Tigermate.php
