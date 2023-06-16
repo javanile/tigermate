@@ -3,16 +3,16 @@ version: '3'
 services:
 
   vtiger:
-    image: javanile/vtiger:7.1.0
+    build: javanile/vtiger:7.1.0
     environment:
-      - VT_DEBUG=true
+      - TIGERMATE_DEBUG=true
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=vtiger
       - MYSQL_ROOT_PASSWORD=secret
     volumes:
       - .:/app
-      - .:/var/www/html/modules/Tigermate
-      - vtiger:/var/lib/vtiger
+      - .:/var/www/html
+
     ports:
       - 8080:80
     links:
