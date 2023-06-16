@@ -2,17 +2,15 @@ version: '3'
 
 services:
 
-  vtiger:
-    build: javanile/vtiger:7.1.0
+  tigermate:
+    build: .
     environment:
-      - TIGERMATE_DEBUG=true
+      - TM_DEBUG=true
       - MYSQL_HOST=mysql
-      - MYSQL_DATABASE=vtiger
+      - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
     volumes:
-      - .:/app
       - .:/var/www/html
-
     ports:
       - 8080:80
     links:
@@ -23,7 +21,7 @@ services:
     image: mysql:5.7.28
     command: --sql-mode=
     environment:
-      - MYSQL_DATABASE=vtiger
+      - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
     volumes:
       - mysql:/var/lib/mysql:rw
@@ -31,7 +29,7 @@ services:
   adminer:
     image: javanile/adminer
     environment:
-      - MYSQL_DATABASE=vtiger
+      - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
     ports:
       - 8081:8080
@@ -40,4 +38,3 @@ services:
 
 volumes:
   mysql:
-  vtiger:

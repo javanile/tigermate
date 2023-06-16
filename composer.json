@@ -1,0 +1,6 @@
+{
+  "name": "javanile/tigermate",
+  "require": {
+    "tracy/tracy": "^2.10"
+  }
+}
