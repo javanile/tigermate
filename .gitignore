@@ -4,3 +4,5 @@
 !.gitkeep
 
 /public/layouts/
+/public/libraries/
+/public/resources/
