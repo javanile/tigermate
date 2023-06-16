@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 3.1.39, created on 2023-06-16 15:40:42
+/* Smarty version 3.1.39, created on 2023-06-16 16:40:54
   from '/var/www/html/lib/layouts/v7/modules/Calendar/CalendarHeader.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.39',
-  'unifunc' => 'content_648c827a11cb50_59855723',
+  'unifunc' => 'content_648c9096b26be1_64655620',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_648c827a11cb50_59855723 (Smarty_Internal_Template $_smarty_tpl) {
+function content_648c9096b26be1_64655620 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <input type="hidden" name="is_record_creation_allowed" id="is_record_creation_allowed" value="<?php echo $_smarty_tpl->tpl_vars['IS_CREATE_PERMITTED']->value;?>
 "><div class="col-sm-12 col-xs-12 module-action-bar clearfix"><div class="module-action-content clearfix coloredBorderTop"><div class="col-lg-5 col-md-5"><span><?php $_smarty_tpl->_assignInScope('VIEW_HEADER_LABEL', "LBL_CALENDAR_VIEW");

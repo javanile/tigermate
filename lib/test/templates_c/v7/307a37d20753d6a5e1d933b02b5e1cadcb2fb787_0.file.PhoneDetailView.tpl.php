@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 3.1.39, created on 2023-06-16 15:42:56
+/* Smarty version 3.1.39, created on 2023-06-16 16:41:56
   from '/var/www/html/lib/layouts/v7/modules/Vtiger/uitypes/PhoneDetailView.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.39',
-  'unifunc' => 'content_648c8300b79872_04937925',
+  'unifunc' => 'content_648c90d47037f5_73128475',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_648c8300b79872_04937925 (Smarty_Internal_Template $_smarty_tpl) {
+function content_648c90d47037f5_73128475 (Smarty_Internal_Template $_smarty_tpl) {
 $_smarty_tpl->_checkPlugins(array(0=>array('file'=>'/var/www/html/lib/libraries/Smarty/libs/plugins/modifier.regex_replace.php','function'=>'smarty_modifier_regex_replace',),));
 ?>
 

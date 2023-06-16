@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 3.1.39, created on 2023-06-16 15:40:42
+/* Smarty version 3.1.39, created on 2023-06-16 16:40:54
   from '/var/www/html/lib/layouts/v7/modules/Calendar/partials/SidebarEssentials.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.39',
-  'unifunc' => 'content_648c827a129c95_29211318',
+  'unifunc' => 'content_648c9096b32480_67199804',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_648c827a129c95_29211318 (Smarty_Internal_Template $_smarty_tpl) {
+function content_648c9096b32480_67199804 (Smarty_Internal_Template $_smarty_tpl) {
 if ($_GET['view'] == 'Calendar' || $_GET['view'] == 'SharedCalendar') {?>
 <div class="sidebar-menu">
     <div class="module-filters" id="module-filters">

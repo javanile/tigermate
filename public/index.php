@@ -3,9 +3,7 @@
 // Cache assets
 $assetFile = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 if (preg_match('/\.(js|css|png|eot|woff|woff2|ttf|svg)$/i', $assetFile) && file_exists('../lib' . $assetFile)) {
-    if (!is_dir(__DIR__ . dirname($assetFile))) {
-        mkdir(__DIR__ . dirname($assetFile), 0777, true);
-    }
+    @mkdir(__DIR__ . dirname($assetFile), 0777, true);
     copy('../lib' . $assetFile, __DIR__ . $assetFile);
     header('Content-Type: '.(preg_match('/\.css$/i', $assetFile) ? 'text/css' : mime_content_type(__DIR__ . $assetFile)));
     header('Content-Length: '.filesize(__DIR__ . $assetFile));

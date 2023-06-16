@@ -1,11 +1,11 @@
 <?php
-/* Smarty version 3.1.39, created on 2023-06-16 15:42:56
+/* Smarty version 3.1.39, created on 2023-06-16 16:41:56
   from '/var/www/html/lib/layouts/v7/modules/Users/DetailViewBlockView.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.39',
-  'unifunc' => 'content_648c8300b55ad0_64643501',
+  'unifunc' => 'content_648c90d46e0914_82580121',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_648c8300b55ad0_64643501 (Smarty_Internal_Template $_smarty_tpl) {
+function content_648c90d46e0914_82580121 (Smarty_Internal_Template $_smarty_tpl) {
 ?>
 <input type=hidden name="timeFormatOptions" data-value='<?php echo $_smarty_tpl->tpl_vars['DAY_STARTS']->value;?>
 ' /><input type='hidden' name='pwd_regex' value= <?php echo ZEND_json::encode($_smarty_tpl->tpl_vars['PWD_REGEX']->value);?>
