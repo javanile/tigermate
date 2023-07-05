@@ -4,6 +4,8 @@ services:
 
   caddy:
     build: docker/caddy
+    environment:
+      - CADDY_HOST=${CRM_HOST}
     ports:
       - 80:80
       - 443:443
@@ -24,7 +26,7 @@ services:
       - adminer
 
   mysql:
-    image: mysql:5.7.28
+    image: mysql:8.0.31
     command: --sql-mode=
     environment:
       - MYSQL_DATABASE=tigermate
