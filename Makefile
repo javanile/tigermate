@@ -25,3 +25,11 @@ deploy:
 	@git commit -am "deploy"
 	@git push
 	@git push heroku main
+
+
+## =====
+## Tests
+## =====
+
+test-deploy:
+	@bash contrib/deploy.sh test

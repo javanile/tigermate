@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
-curl -sL git.io/dist.sh | bash -
+echo "Deploy: $1"
 
-git add .
-git commit -am "release"
-git push
+crm=$(grep "^crm=$1 " .hosts | head -1)
+
+if [ -z "$crm" ]; then
+    echo "No such host: $1"
+    exit 1
+fi
+
+for pair in $crm; do
+  declare "$pair"
+done
+
