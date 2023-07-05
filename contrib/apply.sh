@@ -43,3 +43,5 @@ make restart
 #cat .env
 
 #docker compose logs -f caddy
+
+echo "==> Visit https://$crm_host/"
