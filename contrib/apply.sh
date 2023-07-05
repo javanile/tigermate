@@ -32,9 +32,9 @@ fi
 cp .env.examples .env
 sed -i "s/CRM_HOST=.*/CRM_HOST=$crm_host/g" .env
 
+echo "==> Restart"
+make restart
+
 cat .env
 
-echo "==> Restart"
-#make restart
-
-#docker compose logs -f caddy
+docker compose logs -f caddy
