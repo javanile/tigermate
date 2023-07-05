@@ -23,8 +23,14 @@ clean: fix-permissions
 	@rm -fr public/layouts/* public/libraries/* public/resources/* public/test/* public/modules/*
 	@rm -fr lib/test/templates_c/*
 
-deploy:
+release:
+	@bash contrib/release.sh
+
+deploy: release
 	@bash contrib/deploy.sh $(crm)
+
+shell:
+	@bash contrib/shell.sh $(crm)
 
 ## =====
 ## Tests

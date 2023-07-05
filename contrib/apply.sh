@@ -31,3 +31,5 @@ fi
 
 echo "==> Restart"
 make restart
+
+docker conmpose logs -f caddy

@@ -2,6 +2,12 @@ version: '3'
 
 services:
 
+  caddy:
+    build: docker/caddy
+    ports:
+      - 80:80
+      - 443:443
+
   tigermate:
     build: .
     environment:
