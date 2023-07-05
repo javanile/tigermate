@@ -5,7 +5,7 @@ up:
 start: fix-permissions up
 	@echo "Visit: http://localhost:8080"
 
-restart:
+restart: fix-permissions
 	@docker compose up --build --force-recreate --remove-orphans -d
 
 fix-permissions:
