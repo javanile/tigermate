@@ -19,3 +19,9 @@ require:
 clean: fix-permissions
 	@rm -fr public/layouts/* public/libraries/* public/resources/* public/test/* public/modules/*
 	@rm -fr lib/test/templates_c/*
+
+deploy:
+	@git add .
+	@git commit -am "deploy"
+	@git push
+	@git push heroku main
