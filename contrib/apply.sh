@@ -32,4 +32,4 @@ fi
 echo "==> Restart"
 make restart
 
-docker conmpose logs -f caddy
+docker compose logs -f caddy
