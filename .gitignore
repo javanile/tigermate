@@ -9,5 +9,8 @@
 /public/test/
 /public/modules/
 
+/vat/cache/
 /vendor/
+
 /.hosts
+/.env
