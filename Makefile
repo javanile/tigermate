@@ -5,6 +5,9 @@ up:
 start: fix-permissions up
 	@echo "Visit: http://localhost:8080"
 
+restart:
+	@docker compose up --build --force-recreate --remove-orphans -d
+
 fix-permissions:
 	@chmod 777 lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php
 	@chmod 777 -R lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs
