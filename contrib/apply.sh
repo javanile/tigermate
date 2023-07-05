@@ -22,6 +22,11 @@ fi
 
 cd "/opt/$crm"
 
+echo "==> Install"
+if [ ! -d "vendor" ]; then
+  make install
+fi
+
 echo "==> Update"
 git pull
 
@@ -35,6 +40,6 @@ sed -i "s/CRM_HOST=.*/CRM_HOST=$crm_host/g" .env
 echo "==> Restart"
 make restart
 
-cat .env
+#cat .env
 
-docker compose logs -f caddy
+#docker compose logs -f caddy
