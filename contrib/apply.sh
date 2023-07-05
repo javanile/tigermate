@@ -24,7 +24,7 @@ cd "/opt/$crm"
 
 echo "==> Install"
 if [ ! -d "vendor" ]; then
-  make install
+  make install && true
 fi
 
 echo "==> Update"
