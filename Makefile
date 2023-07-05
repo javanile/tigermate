@@ -24,12 +24,7 @@ clean: fix-permissions
 	@rm -fr lib/test/templates_c/*
 
 deploy:
-	@git add .
-	@git commit -am "deploy"
-	@git push
-	@git push heroku main
-
-
+	@bash contrib/deploy.sh $(crm)
 
 ## =====
 ## Tests

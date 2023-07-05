@@ -14,6 +14,6 @@ for variable in $variables; do
   declare "$variable"
 done
 
-sshpass -p "${password}" \
-    ssh "${user}@${host}" \
-        -p "${port:-22}" bash -s -- "${variables}" < contrib/apply.sh
+sshpass -p "${ssh_password}" \
+    ssh "${ssh_user}@${ssh_host}" \
+        -p "${ssh_port:-22}" bash -s -- "${variables}" < contrib/apply.sh
