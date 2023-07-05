@@ -29,7 +29,12 @@ if [ ! -f .env ]; then
   cp .env.examples .env
 fi
 
-echo "==> Restart"
-make restart
+cp .env.examples .env
+sed -i "s/CRM_HOST=.*/CRM_HOST=$crm_host/g" .env
 
-docker compose logs -f caddy
+cat .env
+
+echo "==> Restart"
+#make restart
+
+#docker compose logs -f caddy
