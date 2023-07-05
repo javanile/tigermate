@@ -36,6 +36,7 @@ fi
 
 cp .env.examples .env
 sed -i "s/CRM_HOST=.*/CRM_HOST=$crm_host/g" .env
+touch lib/config.inc.php
 
 echo "==> Restart"
 make restart
