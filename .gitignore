@@ -12,5 +12,6 @@
 /vat/cache/
 /vendor/
 
+/lib/config.inc.php
 /.hosts
 /.env
