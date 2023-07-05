@@ -11,10 +11,10 @@ fix-permissions:
 	@chmod 777 -R public/layouts public/libraries public/resources public/test public/modules
 
 install:
-	@docker-compose exec tigermate composer install
+	@docker compose exec tigermate composer install
 
 require:
-	@docker-compose exec tigermate composer require tracy/tracy --prefer-dist --update-no-dev
+	@docker compose exec tigermate composer require tracy/tracy --prefer-dist --update-no-dev
 
 clean: fix-permissions
 	@rm -fr public/layouts/* public/libraries/* public/resources/* public/test/* public/modules/*
@@ -25,6 +25,7 @@ deploy:
 	@git commit -am "deploy"
 	@git push
 	@git push heroku main
+
 
 
 ## =====

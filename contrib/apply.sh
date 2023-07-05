@@ -1,19 +1,23 @@
 #!/bin/bash
 set -e
 
-for variable in $*; do
-  declare "$variable"
-done
-
-echo "crm: $crm"
+for variable in $*; do declare "$variable"; done
 
 grant() {
   # echo "$1" | sudo -S git pull
   return 0
 }
 
+if [ -z "$(command -v make)" ]; then
+  apt install -y make
+fi
+
+if [ -z "$(command -v docker)" ]; then
+  curl get.javanile.org/docker | bash
+fi
+
 if [ ! -d "/opt/$crm" ]; then
-  git clone git clone --branch main --single-branch "https://github.com/javanile/tigermate.git" "/opt/$crm"
+  git clone --branch main --single-branch "https://github.com/javanile/tigermate.git" "/opt/$crm"
 fi
 
 cd "/opt/$crm"
