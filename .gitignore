@@ -9,7 +9,9 @@
 /public/test/
 /public/modules/
 
-/vat/cache/
+/var/cache/
+/var/mysql/
+
 /vendor/
 
 /lib/test/templates_c/
