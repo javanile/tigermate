@@ -9,6 +9,7 @@ restart: fix-permissions
 	@docker compose up --build --force-recreate --remove-orphans -d
 
 fix-permissions:
+	@touch lib/config.inc.php
 	@chmod 777 lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php
 	@chmod 777 -R lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs
 	@chmod 777 -R public/layouts public/libraries public/resources public/test public/modules

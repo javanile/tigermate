@@ -12,6 +12,8 @@
 /vat/cache/
 /vendor/
 
+/lib/test/templates_c/
 /lib/config.inc.php
+
 /.hosts
 /.env
