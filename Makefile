@@ -8,6 +8,9 @@ start: fix-permissions up
 restart: fix-permissions
 	@docker compose up --build --force-recreate --remove-orphans -d
 
+stop:
+	@docker compose stop
+
 fix-permissions:
 	@touch lib/config.inc.php
 	@chmod 777 lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php
