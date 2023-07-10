@@ -18,7 +18,7 @@ fix-permissions:
 	@chmod 777 -R public/layouts public/libraries public/resources public/test public/modules
 
 install:
-	@docker compose run --rm --no-deps tigermate composer install
+	@docker compose run --rm --no-deps tigermate composer install && true
 
 require:
 	@docker compose exec tigermate composer require tracy/tracy --prefer-dist --update-no-dev
