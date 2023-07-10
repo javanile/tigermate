@@ -28,6 +28,7 @@ if [ ! -d "vendor" ]; then
 fi
 
 echo "==> Update"
+make prepare
 git pull
 
 if [ ! -f .env ]; then
