@@ -1,0 +1,9 @@
+<?php
+
+
+//This is the access privilege file
+$is_admin=true;
+
+$user_info=array('user_name'=>'admin','is_admin'=>'on','user_password'=>'$2y$10$PtZc8/zk8s/NzPSchc709eCXjL/IXZKMOLLEjulI5TWtjIV7basXO','confirm_password'=>'$2y$10$/QojjuGbj5Cjmcc81BoUd.U1P/EeoSR1HvSrJBQPPK9VBYAopgEHe','first_name'=>'','last_name'=>'Administrator','roleid'=>'H2','email1'=>'info.francescobianco@gmail.com','status'=>'Active','activity_view'=>'This Week','lead_view'=>'Today','hour_format'=>'12','end_hour'=>'23:00','start_hour'=>'00:00','is_owner'=>'1','title'=>'','phone_work'=>'','department'=>'','phone_mobile'=>'','reports_to_id'=>'','phone_other'=>'','email2'=>'','phone_fax'=>'','secondaryemail'=>'','phone_home'=>'','date_format'=>'mm-dd-yyyy','signature'=>'','description'=>'','address_street'=>'','address_city'=>'','address_state'=>'','address_postalcode'=>'','address_country'=>'','accesskey'=>'o5onSDPh7kbDBVCj','time_zone'=>'America/Los_Angeles','currency_id'=>'1','currency_grouping_pattern'=>'123,456,789','currency_decimal_separator'=>'.','currency_grouping_separator'=>',','currency_symbol_placement'=>'$1.0','imagename'=>'','internal_mailer'=>'1','theme'=>'alphagrey','language'=>'en_us','reminder_interval'=>'1 Minute','currency_name'=>'USA, Dollars','currency_code'=>'USD','currency_symbol'=>'&#36;','conv_rate'=>'1.00000','phone_crm_extension'=>'','no_of_currency_decimals'=>'0','truncate_trailing_zeros'=>'1','dayoftheweek'=>'Sunday','callduration'=>'5','othereventduration'=>'5','calendarsharedtype'=>'','default_record_view'=>'Summary','leftpanelhide'=>'0','rowheight'=>'','defaulteventstatus'=>'Planned','defaultactivitytype'=>'Call','hidecompletedevents'=>'','defaultcalendarview'=>'MyCalendar','defaultlandingpage'=>'Home','userlabel'=>'Administrator','record_id'=>'','id'=>'1');
+
+?>

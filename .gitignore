@@ -15,7 +15,9 @@
 /vendor/
 
 /lib/test/templates_c/
+/lib/user_privileges/
 /lib/config.inc.php
+/lib/tabdata.php
 
 /.hosts
 /.env
