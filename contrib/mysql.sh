@@ -19,4 +19,4 @@ for variable in $variables; do
   declare "$variable"
 done
 
-sshpass -p "${ssh_password}" ssh "${ssh_user}@${ssh_host}" -p "${ssh_port:-22}" "cd /opt/$crm && make mysql"
+sshpass -p "${ssh_password}" ssh -t "${ssh_user}@${ssh_host}" -p "${ssh_port:-22}" "cd /opt/$crm && make mysql"
