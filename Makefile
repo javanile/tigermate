@@ -36,6 +36,9 @@ deploy: release
 shell:
 	@bash contrib/shell.sh $(crm)
 
+mysql:
+	@bash contrib/mysql.sh $(crm)
+
 prepare:
 	@bash contrib/prepare.sh
 
