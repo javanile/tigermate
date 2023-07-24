@@ -39,6 +39,9 @@ shell:
 mysql:
 	@bash contrib/mysql.sh $(crm)
 
+reset:
+	@bash contrib/reset.sh $(crm)
+
 prepare:
 	@bash contrib/prepare.sh
 
