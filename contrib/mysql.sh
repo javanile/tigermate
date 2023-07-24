@@ -2,7 +2,7 @@
 set -e
 
 if [ -z "$1" ]; then
-    docker compose exec mysql mysql
+    docker compose exec mysql sh -c "MYSQL_PWD=\$MYSQL_ROOT_PASSWORD mysql -u root -h 0.0.0.0 \$MYSQL_DATABASE"
     exit 0
 fi
 
