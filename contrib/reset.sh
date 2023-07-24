@@ -6,7 +6,8 @@ if [ -z "$1" ]; then
   read AGREE
 
   if [ "${AGREE}" = "YES" ]; then
-    echo '' > lib/config.inc.php
+    rm lib/config.inc.php
+    touch lib/config.inc.php
   fi
 
   exit 0
