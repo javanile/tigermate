@@ -14,7 +14,7 @@ if (preg_match('/\.(js|css|jpg|jpeg|png|eot|woff|woff2|ttf|svg|gif|html)$/i', $a
 use Tracy\Debugger;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-Debugger::enable(Debugger::Development);
+//Debugger::enable(Debugger::Development);
 
 // Extends include path with lib directory
 $libPath = realpath(__DIR__ . '/../lib');

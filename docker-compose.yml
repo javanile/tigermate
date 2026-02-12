@@ -38,21 +38,6 @@ services:
       - ./var/mysql:/var/lib/mysql:rw
     restart: always
 
-  backup:
-    image: javanile/backup
-    environment:
-      - BACKUP_SCHEDULE=1 0 0 * *
-      - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASS=secret
-      - DB_NAME=*
-      - FTP_PROTO=ftp
-      - FTP_HOST=${BACKUP_HOST}
-      - FTP_USER=${BACKUP_USER}
-      - FTP_PASS=${BACKUP_PASSWORD}
-      - REMOTE_PATH=${BACKUP_REMOTE_PATH}
-    restart: always
-
   adminer:
     image: javanile/adminer
     environment:
