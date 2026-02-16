@@ -15,7 +15,7 @@ services:
     build: .
     environment:
       - TM_DEBUG=true
-      - TM_SITE_URL=https://${CRM_HOST}/
+      - TM_SITE_URL=${CRM_PROTOCOL:-http}://${CRM_HOST:-localhost:8080}/
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
