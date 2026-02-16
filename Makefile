@@ -13,9 +13,12 @@ stop:
 
 fix-permissions:
 	@touch lib/config.inc.php
-	@chmod 777 lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php
-	@chmod 777 -R lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs
-	@chmod 777 -R public/layouts public/libraries public/resources public/test public/modules
+	@docker compose run --rm tigermate bash -c "\
+		chmod 777 \
+			lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php \
+			lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs \
+			public/layouts public/libraries public/resources public/test public/modules \
+		"
 
 install:
 	@docker compose run --rm --no-deps tigermate composer install && true
@@ -44,6 +47,11 @@ reset:
 
 prepare:
 	@bash contrib/prepare.sh
+
+dev-push:
+	@git add .
+	@git commit -m "$$(date +'%Y-%m-%d %H:%M:%S') - dev push" || true
+	@git push
 
 ## =====
 ## Tests
