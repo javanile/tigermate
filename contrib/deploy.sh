@@ -15,5 +15,8 @@ for variable in $variables; do
 done
 
 sshpass -p "${ssh_password}" \
-    ssh "${ssh_user}@${ssh_host}" \
-        -p "${ssh_port:-22}" bash -s -- "${variables}" < contrib/apply.sh
+  ssh -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      "${ssh_user}@${ssh_host}" \
+      -p "${ssh_port:-22}" \
+      bash -s -- "${variables}" < contrib/apply.sh
