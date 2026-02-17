@@ -8,6 +8,21 @@ if [ -z "$1" ]; then
   if [ "${AGREE}" = "YES" ]; then
     rm lib/config.inc.php
     touch lib/config.inc.php
+    docker compose exec mysql bash -c '
+      mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "
+      SET FOREIGN_KEY_CHECKS = 0;
+      SET GROUP_CONCAT_MAX_LEN=32768;
+      SELECT GROUP_CONCAT(CONCAT(\"DROP TABLE IF EXISTS \\\`\", table_name, \"\\\`\") SEPARATOR \"; \")
+      INTO @tables
+      FROM information_schema.tables
+      WHERE table_schema = \"$MYSQL_DATABASE\";
+      SET @tables = CONCAT(@tables, \";\");
+      PREPARE stmt FROM @tables;
+      EXECUTE stmt;
+      DEALLOCATE PREPARE stmt;
+      SET FOREIGN_KEY_CHECKS = 1;
+      "
+      '
   fi
 
   exit 0
