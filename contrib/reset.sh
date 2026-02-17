@@ -6,8 +6,10 @@ if [ -z "$1" ]; then
   read AGREE
 
   if [ "${AGREE}" = "YES" ]; then
+    echo "Cleaning configuration..."
     rm lib/config.inc.php
     touch lib/config.inc.php
+    echo "Cleaning database..."
     docker compose exec mysql bash -c '
       mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "
       SET FOREIGN_KEY_CHECKS = 0;
@@ -41,4 +43,9 @@ for variable in $variables; do
   declare "$variable"
 done
 
-sshpass -p "${ssh_password}" ssh -t "${ssh_user}@${ssh_host}" -p "${ssh_port:-22}" "cd /opt/$crm && make reset"
+sshpass -p "${ssh_password}" \
+  ssh -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      "${ssh_user}@${ssh_host}" \
+      -p "${ssh_port:-22}" \
+      "cd /opt/$crm && make reset"
