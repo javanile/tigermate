@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
     touch lib/config.inc.php
     echo "Cleaning database..."
     docker compose down -v mysql
-    docker compose run --rm mysql sh -c "rm -rf /var/lib/mysql/{*,.*} || true"
+    docker compose run --rm mysql sh -c "rm -rf /var/lib/mysql/{*,.*} && chown -R 999:999 /var/lib/mysql" || true
     docker compose up -d mysql
     echo "Done!"
   fi
