@@ -29,7 +29,7 @@ fi
 
 echo "==> Update"
 make prepare
-git pull --force
+git pull --force --no-rebase -m "merge"
 
 if [ ! -f .env ]; then
   cp .env.examples .env
