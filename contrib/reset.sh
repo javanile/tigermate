@@ -25,6 +25,7 @@ if [ -z "$1" ]; then
       SET FOREIGN_KEY_CHECKS = 1;
       "
       '
+    echo "Done!"
   fi
 
   exit 0
