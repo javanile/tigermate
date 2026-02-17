@@ -6,7 +6,7 @@ if [ -z "$2" ]; then
 
   if [ "$1" -gt "0" ]; then
     echo "Reset timer for task: $1"
-    docker compose run --rm mysql sh -c 'mysql -h0.0.0.0 -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "UPDATE vtiger_cron_task SET laststart = 0, lastend = 0, status = 1 WHERE id = '"$1"';"' || true
+    docker compose exec mysql sh -c 'mysql -h0.0.0.0 -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "UPDATE vtiger_cron_task SET laststart = 0, lastend = 0, status = 1 WHERE id = '"$1"';"' || true
   exit 0
 fi
 
