@@ -49,6 +49,9 @@ mysql:
 reset:
 	@bash contrib/reset.sh $(crm)
 
+schedule:
+	@bash contrib/schedule.sh "$(task)" "$(crm)"
+
 prepare:
 	@bash contrib/prepare.sh
 
