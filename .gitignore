@@ -22,3 +22,4 @@
 /.hosts
 /.env
 /vtiger.config.json
+/public/phpinfo.php

@@ -1,5 +1,3 @@
-version: '3'
-
 services:
 
   caddy:
@@ -27,6 +25,11 @@ services:
       - mysql
       - adminer
     restart: always
+
+  xdebug:
+    image: javanile/xdebug
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
 
   mysql:
     image: mysql:8.0.31
