@@ -37,6 +37,8 @@ fi
 
 cp .env.examples .env
 sed -i "s/CRM_HOST=.*/CRM_HOST=$crm_host/g" .env
+sed -i "s/GOOGLE_CLIENT_ID=.*/GOOGLE_CLIENT_ID=$google_client_id/g" .env
+sed -i "s/GOOGLE_CLIENT_SECRET=.*/GOOGLE_CLIENT_SECRET=$google_client_secret/g" .env
 touch lib/config.inc.php
 
 echo "==> Restart"

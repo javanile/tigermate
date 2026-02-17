@@ -17,6 +17,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     volumes:
       - .:/var/www/html
     ports:
