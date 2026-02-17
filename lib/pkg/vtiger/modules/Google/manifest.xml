@@ -13,5 +13,11 @@
 	<tables>
 	</tables>
 	<crons>
+		<cron>
+			<name>Google Sync</name>
+			<handler>cron/modules/Google/GoogleSync.service</handler>
+			<frequency>900</frequency>
+			<description>Recommended frequency for MailScanner is 15 mins</description>
+		</cron>
 	</crons>
 </module>
