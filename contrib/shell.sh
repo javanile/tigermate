@@ -14,4 +14,8 @@ for variable in $variables; do
   declare "$variable"
 done
 
-sshpass -p "${ssh_password}" ssh "${ssh_user}@${ssh_host}" -p "${ssh_port:-22}"
+sshpass -p "${ssh_password}" \
+  ssh -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      "${ssh_user}@${ssh_host}" \
+      -p "${ssh_port:-22}"
