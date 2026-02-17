@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 git add .
-git commit -am "release"
+git commit -am "release" || true
 git push
