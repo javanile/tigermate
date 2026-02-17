@@ -9,8 +9,16 @@
  * ***********************************************************************************/
 
 Class Google_Config_Connector {
-	static $clientId = getenv('GOOGLE_CLIENT_ID');
-	static $clientSecret = getenv('GOOGLE_CLIENT_SECRET');
+	static $clientId = '';
+	static $clientSecret = '';
+
+    static function getClientId() {
+        return getenv('GOOGLE_CLIENT_ID');
+    }
+
+    static function getClientSecret() {
+        return getenv('GOOGLE_CLIENT_SECRET');
+    }
 
 	static function getRedirectUrl() {
 		global $site_URL;
