@@ -19,7 +19,7 @@ fix-permissions:
 			lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php \
 			lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs \
 			public/layouts public/libraries public/resources public/test public/modules \
-			lib/cache/images/ cache/import/ test/vtlib/ \
+			lib/cache/images/ lib/cache/import/ lib/test/vtlib/ \
 		"
 
 install:
