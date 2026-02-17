@@ -14,6 +14,7 @@ stop:
 
 fix-permissions:
 	@touch lib/config.inc.php
+	@docker compose run --rm tigermate bash -c "chmod 777 -R lib/modules"
 	@docker compose run --rm tigermate bash -c "\
 		chmod 777 \
 			lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php \
