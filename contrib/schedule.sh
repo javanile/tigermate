@@ -9,9 +9,7 @@ if [ -z "$2" ]; then
     docker compose exec mysql sh -c 'mysql -h0.0.0.0 -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "UPDATE vtiger_cron_task SET laststart = 0, lastend = 0, status = 1 WHERE id = '"$1"';"' || true
   fi
 
-  cd lib
-  php -f vtigercron.php
-  cd ..
+  docker compose exec tigermate bash -c "cd lib && php -f vtigercron.php"
 
   exit 0
 fi
