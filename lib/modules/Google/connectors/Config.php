@@ -12,14 +12,6 @@ Class Google_Config_Connector {
 	static $clientId = '';
 	static $clientSecret = '';
 
-    static function getClientId() {
-        return getenv('GOOGLE_CLIENT_ID');
-    }
-
-    static function getClientSecret() {
-        return getenv('GOOGLE_CLIENT_SECRET');
-    }
-
 	static function getRedirectUrl() {
 		global $site_URL;
 		return $site_URL.'index.php?module=Google&view=Authenticate&service=Google';
