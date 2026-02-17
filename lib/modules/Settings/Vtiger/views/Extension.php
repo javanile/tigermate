@@ -67,7 +67,7 @@ class Settings_Vtiger_Extension_View extends Settings_Vtiger_Index_View {
 
 	function process(Vtiger_Request $request) {
 		$extensionViewInstance = $this->getExtensionViewInstance($request);
-		$extensionViewInstance->process($request);
+        $extensionViewInstance->process($request);
 	}
 
 	/**
