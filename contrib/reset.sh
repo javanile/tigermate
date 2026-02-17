@@ -9,6 +9,7 @@ if [ -z "$1" ]; then
     echo "Cleaning configuration..."
     rm lib/config.inc.php
     touch lib/config.inc.php
+    chmod 777 lib/config.inc.php
     echo "Cleaning database..."
     docker compose down -v mysql
     docker compose run --rm mysql sh -c "rm -rf /var/lib/mysql/{*,.*} && chown -R 999:999 /var/lib/mysql" || true
