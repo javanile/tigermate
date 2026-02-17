@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
     touch lib/config.inc.php
     echo "Cleaning database..."
     docker compose exec mysql bash -c '
-      mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "
+      mysql -u root -h0.0.0.0 -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "
       SET FOREIGN_KEY_CHECKS = 0;
       SET GROUP_CONCAT_MAX_LEN=32768;
       SELECT GROUP_CONCAT(CONCAT(\"DROP TABLE IF EXISTS \\\`\", table_name, \"\\\`\") SEPARATOR \"; \")
