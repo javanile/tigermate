@@ -46,6 +46,13 @@ sed -i "s/GOOGLE_CLIENT_ID=.*/GOOGLE_CLIENT_ID=$google_client_id/g" .env
 sed -i "s/GOOGLE_CLIENT_SECRET=.*/GOOGLE_CLIENT_SECRET=$google_client_secret/g" .env
 touch lib/config.inc.php
 
+sed -i \
+  -e "s|static \$clientId = ''|static \$clientId = '${google_client_id}'|" \
+  -e "s|static \$clientSecret = ''|static \$clientSecret = '${google_client_secret}'|" \
+  lib/modules/Google/connectors/Config.php
+
+cat lib/modules/Google/connectors/Config.php
+
 echo "==> Restart services"
 make apply
 
