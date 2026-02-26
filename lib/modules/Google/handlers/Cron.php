@@ -11,7 +11,13 @@ class Google_Cron_Handler
         $allUsers = getAllUserName();
         foreach ($allUsers as $userId => $userLabel) {
             echo "Syncing for user: $userLabel (ID: $userId)\n";
-            $current_user = Users_Record_Model::getInstanceById($userId, 'Users');;
+            $current_user = new Users();
+            $current_user->retrieveCurrentUserInfoFromFile($userId, 'Users');
+            $currentUserModel = Users_Record_Model::getCurrentUserModel();
+            if ($currentUserModel->getId() != $userId) {
+                echo "ERROR: Failed to set current user to $userLabel (ID: $userId). Skipping sync for this user.\n";
+                continue;
+            }
             $params = array(
                 'module' => 'Google',
                 'view' => 'Sync',
