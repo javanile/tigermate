@@ -70,7 +70,7 @@
 									 {else}
 										 {if $CURRENT_CV_MODEL->get('viewname') eq 'All' and !$CURRENT_USER_MODEL->isAdminUser()} 
 											 title="{vtranslate('LBL_SHARED_LIST_NON_ADMIN_MESSAGE',$MODULE)}"
-										 {elseif !$CURRENT_CV_MODEL->isMine()}
+										 {elseif $CURRENT_CV_MODEL && !$CURRENT_CV_MODEL->isMine()}
 											 {assign var=CURRENT_CV_USER_ID value=$CURRENT_CV_MODEL->get('userid')}
 											 {if !Vtiger_Functions::isUserExist($CURRENT_CV_USER_ID)}
 												 {assign var=CURRENT_CV_USER_ID value=Users::getActiveAdminId()}
