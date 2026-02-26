@@ -42,10 +42,10 @@ sed -i "s/GOOGLE_CLIENT_SECRET=.*/GOOGLE_CLIENT_SECRET=$google_client_secret/g" 
 touch lib/config.inc.php
 
 echo "==> Restart"
-make restart
+make restart || true
 
 echo "==> Migrate"
-make migrate
+make migrate || true
 
 #cat .env
 
