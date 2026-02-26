@@ -41,10 +41,10 @@ sed -i "s/GOOGLE_CLIENT_ID=.*/GOOGLE_CLIENT_ID=$google_client_id/g" .env
 sed -i "s/GOOGLE_CLIENT_SECRET=.*/GOOGLE_CLIENT_SECRET=$google_client_secret/g" .env
 touch lib/config.inc.php
 
-echo "==> Restart"
+echo "==> Restart services"
 make restart || true
 
-echo "==> Migrate"
+echo "==> Migrate database"
 make migrate || true
 
 #cat .env
