@@ -61,7 +61,7 @@ prepare:
 	@bash contrib/prepare.sh
 
 migrate:
-	@docker compose exec tigermate bash -c "cd lib && php migrate.php"
+	@docker compose exec tigermate bash -c "cd lib && php migrate.php" || true
 
 dev-push:
 	@git add .
