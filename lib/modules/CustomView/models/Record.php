@@ -1126,7 +1126,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	 * @return <Array> - Associative array of Status label to an array of Vtiger_CustomView_Record models
 	 */
 	public static function getAllByGroup($moduleName='', $listMode = true) {
-		$customViews = self::getAll($moduleName);
+        $customViews = self::getAll($moduleName);
 		$groupedCustomViews = array();
 		$groupedCustomViews['Mine'] = array();
 		$groupedCustomViews['Shared'] = array();
