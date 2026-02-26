@@ -1,5 +1,10 @@
 #!/bin/bash
-set -e
+set -Eeuo pipefail
+
+trap 'echo "❌ ERRORE in linea $LINENO"
+echo "   Comando: $BASH_COMMAND"
+echo "   Exit code: $?"
+' ERR
 
 for variable in $*; do declare "$variable"; done
 
