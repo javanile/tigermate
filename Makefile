@@ -6,6 +6,8 @@ start: fix-permissions up
 	@echo "Visit: http://localhost:8080"
 
 restart: fix-permissions
+	@echo "Cleaning cached files..."
+	@docker compose run --rm tigermate bash -c "rm -fr public/layouts/v7/skins/marketing/style.css"
 	@echo "Restarting containers..."
 	@docker compose up --build --force-recreate --remove-orphans -d || true
 	@echo "Refreshing containers..."
