@@ -36,6 +36,9 @@ clean: fix-permissions
 	@rm -fr public/layouts/* public/libraries/* public/resources/* public/test/* public/modules/*
 	@rm -fr lib/test/templates_c/*
 
+apply: restart migrate
+	@echo "System is up and running."
+
 release:
 	@bash contrib/release.sh
 
