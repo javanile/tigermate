@@ -28,6 +28,14 @@ services:
       - adminer
     restart: always
 
+  crontab:
+    build: docker/crontab
+    command:
+      - "*/5 * * * * cd /app && make schedule"
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+
   xdebug:
     image: javanile/xdebug
     cap_add: [ 'NET_ADMIN', 'NET_RAW' ]

@@ -81,3 +81,8 @@ test-phpinfo:
 	@docker compose up --build --force-recreate --remove-orphans -d
 	@echo "<?php phpinfo();" > public/phpinfo.php
 	@echo "Visit: http://localhost:8080/phpinfo.php"
+
+test-crontab:
+	@docker compose up -d
+	@docker compose up --force-recreate --remove-orphans -d crontab
+	@docker compose logs -f crontab
