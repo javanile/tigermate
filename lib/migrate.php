@@ -5,6 +5,13 @@ include_once 'include/Webservices/Relation.php';
 
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'includes/main/WebUI.php';
+include_once 'include/database/PearDatabase.php';
+
+ini_set('display_errors','on'); version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);   // DEBUGGING
+
+global $adb;
+
+$adb->setDieOnError(true);
 
 echo "Checking for missing tables and creating them if necessary...\n";
 
