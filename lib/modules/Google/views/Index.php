@@ -22,12 +22,13 @@ class Google_Index_View extends Vtiger_ExtensionViews_View {
 	function getUserEmail() {
 		$user = Users_Record_Model::getCurrentUserModel();
 		$oauth2 = new Google_Oauth2_Connector('Contacts');
+		$profileInfo = null;
 		if($oauth2->hasStoredToken()) {
 			$controller = new Google_Contacts_Controller($user);
 			$connector = $controller->getTargetConnector();
 			$profileInfo = json_decode($connector->getUserProfileInfo(),true);
 		}
-		return $profileInfo['email'];
+		return $profileInfo ? $profileInfo['email'] : null;
 	}
 
 	/**
@@ -52,19 +53,20 @@ class Google_Index_View extends Vtiger_ExtensionViews_View {
 
 		$oauth2 = new Google_Oauth2_Connector('Contacts');
 		$isSyncReady = false;
+		$contactGroups = array();
 		if($oauth2->hasStoredToken()) {
 			$controller = new Google_Contacts_Controller($user);
 			$connector = $controller->getTargetConnector();
 			try {
 				$contactGroups = $connector->pullGroups();
 			} catch(Exception $e) {
-				$contactGroups = array();
 			}
 			$isSyncReady = true;
 		}
 
 		$oauth2 = new Google_Oauth2_Connector('Calendar');
 		$selectedGoogleCalendar = Google_Utils_Helper::getSelectedCalendarForUser($user);
+		$calendars = array();
 		if($oauth2->hasStoredToken()) {
 			$controller = new Google_Calendar_Controller($user);
 			$connector = $controller->getTargetConnector();
@@ -76,7 +78,6 @@ class Google_Index_View extends Vtiger_ExtensionViews_View {
 						$validCalendarSelected = true;
 				}
 			} catch(Exception $e) {
-				$calendars = array();
 			}
 			if(!$validCalendarSelected) $selectedGoogleCalendar = 'primary';
 		}

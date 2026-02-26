@@ -7,6 +7,7 @@
 * All Rights Reserved.
 *************************************************************************************}
 
+{assign var=MODULENAME value=$MODULE}
 {assign var=RETURN_URL value={$MODULE_MODEL->getExtensionSettingsUrl($SOURCEMODULE)}}
 {if $PARENT eq 'Settings'}
 	{assign var=RETURN_URL value=$MODULE_MODEL->getExtensionSettingsUrl($SOURCEMODULE)|cat:"&parent=Settings"}
@@ -62,7 +63,7 @@
 						<tr>
 							<td>
 								<select name="Calendar[google_group]" class="inputElement select2 row" style="min-width: 250px;">
-									{if php7_count($GOOGLE_CALENDARS) eq 0}
+									{if $GOOGLE_CALENDARS && php7_count($GOOGLE_CALENDARS) eq 0}
 										<option value="primary">{vtranslate('LBL_PRIMARY',$MODULENAME)}</option>
 									{/if}
 									{foreach item=CALENDAR_ITEM from=$GOOGLE_CALENDARS}

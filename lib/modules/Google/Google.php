@@ -11,6 +11,7 @@
 require_once 'vtlib/Vtiger/Module.php';
 require_once('include/events/include.inc');
 
+#[\AllowDynamicProperties]
 class Google {
 
     const module = 'Google';
