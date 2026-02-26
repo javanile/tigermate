@@ -1,5 +1,5 @@
 #!/bin/bash
-set -Eeuo pipefail
+set -e
 
 trap 'echo "❌ ERRORE in linea $LINENO"
 echo "   Comando: $BASH_COMMAND"
