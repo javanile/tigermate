@@ -9,7 +9,7 @@ restart: fix-permissions
 	@echo "Restarting containers..."
 	@docker compose up --build --force-recreate --remove-orphans -d || true
 	@echo "Refreshing containers..."
-	@docker compose up -d
+	@docker compose up -d && sleep 10
 
 stop:
 	@docker compose stop
