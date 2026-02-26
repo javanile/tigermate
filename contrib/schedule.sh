@@ -27,8 +27,6 @@ for variable in $variables; do
   declare "$variable"
 done
 
-exit
-
 sshpass -p "${ssh_password}" \
   ssh -o StrictHostKeyChecking=no \
       -o UserKnownHostsFile=/dev/null \
