@@ -61,7 +61,9 @@ prepare:
 	@bash contrib/prepare.sh
 
 migrate:
-	@docker compose exec tigermate bash -c "cd lib && php migrate.php" || true
+	@docker compose exec tigermate bash -c " \
+		cd lib; XDEBUG_CONFIG='remote_enable=1' \
+		  PHP_IDE_CONFIG='serverName=localhost' php -f migrate.php" || true
 
 dev-push:
 	@git add .
