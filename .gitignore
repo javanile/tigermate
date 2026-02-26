@@ -21,5 +21,6 @@
 
 /.hosts
 /.env
+/lib/modules/Google/connectors/Config.php
 /vtiger.config.json
 /public/phpinfo.php
