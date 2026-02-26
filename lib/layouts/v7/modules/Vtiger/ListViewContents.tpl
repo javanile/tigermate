@@ -65,7 +65,7 @@
 						{if $MODULE_MODEL->isFilterColumnEnabled()}
 							<div id="listColumnFilterContainer">
 								<div class="listColumnFilter {if $CURRENT_CV_MODEL and !($CURRENT_CV_MODEL->isCvEditable())}disabled{/if}"  
-									 {if $CURRENT_CV_MODEL->isCvEditable()}
+									 {if $CURRENT_CV_MODEL && $CURRENT_CV_MODEL->isCvEditable()}
 										 title="{vtranslate('LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS',$MODULE)}"
 									 {else}
 										 {if $CURRENT_CV_MODEL->get('viewname') eq 'All' and !$CURRENT_USER_MODEL->isAdminUser()} 

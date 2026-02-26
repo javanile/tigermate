@@ -16,7 +16,7 @@ fi
 
 echo "Schedule: $2"
 
-variables=$(grep "^crm=$2 " .hosts | head -1)
+variables=$(awk '/\\$/ { sub(/\\$/,""); printf "%s",$0; next } 1' .hosts | grep "^crm=$2 " | head -n1)
 
 if [ -z "$variables" ]; then
     echo "No such host: $2"
@@ -26,6 +26,8 @@ fi
 for variable in $variables; do
   declare "$variable"
 done
+
+exit
 
 sshpass -p "${ssh_password}" \
   ssh -o StrictHostKeyChecking=no \
