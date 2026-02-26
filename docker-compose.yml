@@ -3,7 +3,7 @@ services:
   caddy:
     build: docker/caddy
     environment:
-      - CADDY_HOST=${CRM_HOST}
+      - CADDY_HOST=${CRM_HOST:-localhost:8080}
     ports:
       - 80:80
       - 443:443
@@ -17,8 +17,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=tigermate
       - MYSQL_ROOT_PASSWORD=secret
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     volumes:
       - .:/var/www/html
     ports:

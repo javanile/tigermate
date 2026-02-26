@@ -44,6 +44,9 @@ touch lib/config.inc.php
 echo "==> Restart"
 make restart
 
+echo "==> Migrate"
+make migrate
+
 #cat .env
 
 #docker compose logs -f caddy

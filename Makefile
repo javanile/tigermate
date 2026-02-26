@@ -55,6 +55,9 @@ schedule:
 prepare:
 	@bash contrib/prepare.sh
 
+migrate:
+	@docker compose exec tigermate bash -c "cd lib && php migrate.php"
+
 dev-push:
 	@git add .
 	@git commit -m "$$(date +'%Y-%m-%d %H:%M:%S') - dev push" || true
