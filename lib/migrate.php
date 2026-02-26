@@ -32,3 +32,12 @@ if (!Vtiger_Utils::CheckTable('vtiger_cv2rs')) {
 				CONSTRAINT `vtiger_customview_ibfk_4` FOREIGN KEY (`cvid`) REFERENCES `vtiger_customview` (`cvid`) ON DELETE CASCADE,
 				CONSTRAINT `vtiger_rolesd_ibfk_1` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE)', true);
 }
+
+$allScheduler = array_reduce(Vtiger_Cron::listAllActiveInstances(), function($result, $scheduler) {;
+    $result[] = $scheduler->getName();
+    return $result;
+}, array());
+
+if (!in_array('GoogleSync', $allScheduler)) {
+    Vtiger_Cron::register( 'GoogleSync', 'cron/modules/Google/GoogleSync.service', 900, 'Settings', 1, 5, 'Recommended frequency for Google sync is 15 mins');
+}
