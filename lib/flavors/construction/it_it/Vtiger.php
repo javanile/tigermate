@@ -620,7 +620,7 @@ $languageStrings = [
     'Purchase Order'     => 'Ordini d\acquisto',
     'Payments'           => 'Pagamento',
     'List and Campaigns' => 'Lista e Campagna ',
-    'Project Tasks'      => 'Giornata',
+    'Project Tasks'      => 'Giornate',
     'Project Milestones' => 'Lavorazioni',
 
     'Labels Editor' => 'Labels Editor',
