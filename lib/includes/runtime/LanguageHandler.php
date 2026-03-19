@@ -127,10 +127,28 @@ class Vtiger_Language_Handler {
 			$qualifiedName = 'languages.'.$language.'.'.$module;
 			$file = Vtiger_Loader::resolveNameToPath($qualifiedName);
 			$languageStrings = $jsLanguageStrings = array();
-			if(file_exists($file)){
+            $flavorLanguageStrings = $flavorJsLanguageStrings = array();
+
+            if (file_exists($file)) {
 				require $file;
-				self::$languageContainer[$language][$module]['languageStrings'] = $languageStrings;
-				self::$languageContainer[$language][$module]['jsLanguageStrings'] = $jsLanguageStrings;
+
+                $flavor = getenv('TM_FLAVOR');
+                if (in_array($flavor, ['construction', 'education', 'healthcare'])) {
+                    $flavorFile = str_replace('/languages/'.$language.'/', '/flavors/'.$flavor.'/'.$language.'/', $file);
+                    if (file_exists($flavorFile)) {
+                        require $flavorFile;
+                    }
+                }
+
+                self::$languageContainer[$language][$module]['languageStrings'] = array_merge(
+                    $languageStrings,
+                    $flavorLanguageStrings
+                );
+
+				self::$languageContainer[$language][$module]['jsLanguageStrings'] = array_merge(
+                    $jsLanguageStrings,
+                    $flavorJsLanguageStrings
+                );
 			}
 		}
 		// add custom translation for module from language/custom/$language/$module.php file
@@ -138,10 +156,18 @@ class Vtiger_Language_Handler {
         $file = Vtiger_Loader::resolveNameToPath($qualifiedCustomName);
 
         $languageStrings = $jsLanguageStrings = array();
-		if(file_exists($file)){
+        if (file_exists($file)) {
             require $file;
-            self::$languageContainer[$language][$module]['languageStrings'] = array_merge(self::$languageContainer[$language][$module]['languageStrings'],$languageStrings);
-            self::$languageContainer[$language][$module]['jsLanguageStrings'] = array_merge(self::$languageContainer[$language][$module]['jsLanguageStrings'],$jsLanguageStrings);
+
+            self::$languageContainer[$language][$module]['languageStrings'] = array_merge(
+                self::$languageContainer[$language][$module]['languageStrings'],
+                $languageStrings
+            );
+
+            self::$languageContainer[$language][$module]['jsLanguageStrings'] = array_merge(
+                self::$languageContainer[$language][$module]['jsLanguageStrings'],
+                $jsLanguageStrings
+            );
         } 
 		$return = array();
 		if(isset(self::$languageContainer[$language][$module])){
