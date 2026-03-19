@@ -73,6 +73,8 @@ $flavorLanguageStrings = [
     'LBL_SELECT_PROJECT_TASK_STATUS_COLOR' => 'Selezionare Cantiere attivit&agrave Colore Stato',
     'LBL_SELECT_STATUS'                    => 'Selezionare Stato',
     'LBL_EDIT_COLOR'                       => 'Modifica colore',
+
+    'Add Project Task' => 'Aggiungi Giornata',
 ];
 
 $flavorJsLanguageStrings = [

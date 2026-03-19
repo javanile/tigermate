@@ -1120,7 +1120,7 @@ if(empty($adb)) {
 	$adb = new PearDatabase();
 	$adb->connect();
 
-	if (strtolower(@$_GET['DEBUG_ERROR']) == 'yes') {
+	if (@DEBUG_ERROR) {
 		$adb->setDieOnError(true);
 	}
 }

@@ -10,6 +10,7 @@
 
 //Overrides GetRelatedList : used to get related query
 //TODO : Eliminate below hacking solution
+include_once 'debug.php';
 include_once 'config.php';
 include_once 'include/Webservices/Relation.php';
 
