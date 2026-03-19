@@ -7,7 +7,7 @@ start: fix-permissions up
 
 restart: fix-permissions
 	@echo "Cleaning cached files..."
-	@docker compose run --rm tigermate bash -c "rm -fr public/layouts/v7/skins/marketing/style.css"
+	@docker compose run --rm tigermate bash -c "rm -fr public/layouts/v7/skins/marketing/style.css public/layouts/v7/skins/project/style.css"
 	@echo "Restarting containers..."
 	@docker compose up --build --force-recreate --remove-orphans -d || true
 	@echo "Refreshing containers..."

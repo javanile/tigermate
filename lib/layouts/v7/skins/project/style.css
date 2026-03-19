@@ -5089,9 +5089,9 @@ hr {
   padding-left: 20px !important;
 }
 .related-tabs.row .nav > li {
-  padding: 0 10px;
+  padding: 0 5px;
   margin: 0 2px 3px 2px;
-  width: 90px;
+  width: 100px;
   text-align: center;
 }
 .massEditTabs.nav > li {

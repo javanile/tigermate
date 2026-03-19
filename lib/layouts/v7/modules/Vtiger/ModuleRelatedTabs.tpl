@@ -51,10 +51,16 @@
                                                                     {if $RELATEDMODULENAME eq "ModComments"}
                                                                             <span class="tab-icon"><i class="fa fa-comment" style="font-size: 24px"></i></span>
                                                                     {else}
-                                                                            <span class="tab-icon">
+                                                                		{if $RELATEDMODULENAME eq "ProjectTask" or $RELATEDMODULENAME eq "ProjectMilestone"}
+																			<span class="tab-label">
+																				<strong>{$DETAILVIEWRELATEDLINKLBL}</strong>
+                                                                            </span>
+                                                                        {else}
+																			<span class="tab-icon">
                                                                                     {assign var=RELATED_MODULE_MODEL value=Vtiger_Module_Model::getInstance($RELATEDMODULENAME)}
                                                                                     {$RELATED_MODULE_MODEL->getModuleIcon()}
                                                                             </span>
+                                                                        {/if}
                                                                     {/if}
                                                                     &nbsp;<span class="numberCircle hide">0</span>
                                                             </a>
