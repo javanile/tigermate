@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIB_DIR="$ROOT_DIR/lib"
 PUBLIC_DIR="$ROOT_DIR/public"
+CONTAINER_WORKDIR="/var/www/html"
+CONTAINER_SERVICE="tigermate"
 
 STATE_DIR="${TMPDIR:-/tmp}/tigermate-asset-cache-watcher"
 PID_FILE="$STATE_DIR/watcher.pid"
@@ -12,6 +14,23 @@ LOG_FILE="$STATE_DIR/watcher.log"
 SNAPSHOT_FILE="$STATE_DIR/snapshot.tsv"
 
 mkdir -p "$STATE_DIR"
+
+run_in_container() {
+    local command="${1:-status}"
+    docker compose exec "${CONTAINER_SERVICE}" bash -lc \
+        "cd '${CONTAINER_WORKDIR}' && TIGERMATE_WATCH_CONTAINER=1 bash contrib/watch.sh ${command}"
+}
+
+ensure_container_context() {
+    case "${1:-run}" in
+        run|start|stop|status|restart)
+            if [[ -z "${TIGERMATE_WATCH_CONTAINER:-}" ]]; then
+                run_in_container "${1:-status}"
+                exit $?
+            fi
+            ;;
+    esac
+}
 
 snapshot() {
     find "$LIB_DIR" -type f \
@@ -126,18 +145,23 @@ watcher_status() {
 
 case "${1:-run}" in
     run)
+        ensure_container_context "${1:-run}"
         run_watcher
         ;;
     start)
+        ensure_container_context "${1:-run}"
         start_watcher
         ;;
     stop)
+        ensure_container_context "${1:-run}"
         stop_watcher
         ;;
     status)
+        ensure_container_context "${1:-run}"
         watcher_status
         ;;
     restart)
+        ensure_container_context "${1:-run}"
         stop_watcher
         start_watcher
         ;;

@@ -96,7 +96,7 @@ Class Settings_MenuEditor_SaveAjax_Action extends Settings_Vtiger_IndexAjax_View
 	}
 
 	function removeCustomLink(Vtiger_Request $request) {
-		$linkId = $request->getInteger('customLinkId');
+		$linkId = (int) $request->get('customLinkId');
 		Settings_MenuEditor_CustomLink_Model::removeCustomLink($linkId);
 
 		$response = new Vtiger_Response();
@@ -105,7 +105,7 @@ Class Settings_MenuEditor_SaveAjax_Action extends Settings_Vtiger_IndexAjax_View
 	}
 
 	function updateCustomLink(Vtiger_Request $request) {
-		$linkId = $request->getInteger('customLinkId');
+		$linkId = (int) $request->get('customLinkId');
 		$appName = $request->get('appname');
 		$label = trim($request->get('label'));
 		$linkUrl = trim($request->get('linkurl'));

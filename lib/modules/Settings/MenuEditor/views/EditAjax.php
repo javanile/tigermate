@@ -42,7 +42,7 @@ class Settings_MenuEditor_EditAjax_View extends Settings_Vtiger_Index_View {
 		$viewer->assign('SELECTED_APP_NAME', $request->get('appname'));
 		$viewer->assign('MODULE', $request->getModule());
 		$viewer->assign('QUALIFIED_MODULE', $qualifiedModuleName);
-		$viewer->assign('CUSTOM_LINK_ID', $request->getInteger('customLinkId'));
+		$viewer->assign('CUSTOM_LINK_ID', (int) $request->get('customLinkId'));
 		$viewer->assign('CUSTOM_LINK_LABEL', $request->get('label'));
 		$viewer->assign('CUSTOM_LINK_URL', $request->get('linkurl'));
 		$viewer->assign('FORM_MODE', $request->get('formMode'));
