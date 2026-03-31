@@ -14,6 +14,9 @@ Class Settings_MenuEditor_SaveAjax_Action extends Settings_Vtiger_IndexAjax_View
 		parent::__construct();
 		$this->exposeMethod('removeModule');
 		$this->exposeMethod('addModule');
+		$this->exposeMethod('addCustomLink');
+		$this->exposeMethod('updateCustomLink');
+		$this->exposeMethod('removeCustomLink');
 		$this->exposeMethod('saveSequence');
 	}
 
@@ -55,11 +58,66 @@ Class Settings_MenuEditor_SaveAjax_Action extends Settings_Vtiger_IndexAjax_View
 	function saveSequence(Vtiger_Request $request) {
 		$moduleSequence = $request->get('sequence');
 		$appName = $request->get('appname');
+		$customLinkSequence = $request->get('customLinkSequence');
 		$db = PearDatabase::getInstance();
 		foreach ($moduleSequence as $moduleName => $sequence) {
 			$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+			if (empty($moduleModel)) {
+				continue;
+			}
 			$db->pquery('UPDATE vtiger_app2tab SET sequence = ? WHERE tabid = ? AND appname = ?', array($sequence, $moduleModel->getId(), $appName));
 		}
+		if (!empty($customLinkSequence)) {
+			Settings_MenuEditor_CustomLink_Model::saveSequence($customLinkSequence, $appName);
+		}
+
+		$response = new Vtiger_Response();
+		$response->setResult(array('success' => true));
+		$response->emit();
+	}
+
+	function addCustomLink(Vtiger_Request $request) {
+		$appName = $request->get('appname');
+		$label = trim($request->get('label'));
+		$linkUrl = trim($request->get('linkurl'));
+
+		if (empty($appName) || empty($label) || empty($linkUrl)) {
+			$response = new Vtiger_Response();
+			$response->setError(400, 'Missing required fields');
+			$response->emit();
+			return;
+		}
+
+		Settings_MenuEditor_CustomLink_Model::addCustomLink($appName, $label, $linkUrl);
+
+		$response = new Vtiger_Response();
+		$response->setResult(array('success' => true));
+		$response->emit();
+	}
+
+	function removeCustomLink(Vtiger_Request $request) {
+		$linkId = $request->getInteger('customLinkId');
+		Settings_MenuEditor_CustomLink_Model::removeCustomLink($linkId);
+
+		$response = new Vtiger_Response();
+		$response->setResult(array('success' => true));
+		$response->emit();
+	}
+
+	function updateCustomLink(Vtiger_Request $request) {
+		$linkId = $request->getInteger('customLinkId');
+		$appName = $request->get('appname');
+		$label = trim($request->get('label'));
+		$linkUrl = trim($request->get('linkurl'));
+
+		if (empty($linkId) || empty($appName) || empty($label) || empty($linkUrl)) {
+			$response = new Vtiger_Response();
+			$response->setError(400, 'Missing required fields');
+			$response->emit();
+			return;
+		}
+
+		Settings_MenuEditor_CustomLink_Model::updateCustomLink($linkId, $appName, $label, $linkUrl);
 
 		$response = new Vtiger_Response();
 		$response->setResult(array('success' => true));

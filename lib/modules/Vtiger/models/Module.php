@@ -96,6 +96,14 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		return in_array($this->get('presence'), array(0,2));
 	}
 
+	public function isCustomLink() {
+		return false;
+	}
+
+	public function needsAppParameter() {
+		return true;
+	}
+
 	/**
 	 * Function checks if the module is enabled for tracking changes
 	 * @return <Boolean>

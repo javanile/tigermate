@@ -13,10 +13,19 @@
 
 <div id="modules-menu" class="modules-menu">
 	{foreach key=moduleName item=moduleModel from=$SELECTED_CATEGORY_MENU_LIST}
-		{assign var='translatedModuleLabel' value=vtranslate($moduleModel->get('label'),$moduleName )}
+		{if $moduleModel->isCustomLink()}
+			{assign var='translatedModuleLabel' value=$moduleModel->get('label')}
+			{assign var='moduleUrl' value=$moduleModel->getDefaultUrl()}
+			{if $moduleModel->needsAppParameter()}
+				{assign var='moduleUrl' value=$moduleUrl|cat:"&app="|cat:$SELECTED_MENU_CATEGORY}
+			{/if}
+		{else}
+			{assign var='translatedModuleLabel' value=vtranslate($moduleModel->get('label'),$moduleName )}
+			{assign var='moduleUrl' value=$moduleModel->getDefaultUrl()|cat:"&app="|cat:$SELECTED_MENU_CATEGORY}
+		{/if}
 		<ul title="{$translatedModuleLabel}" class="module-qtip">
-			<li {if $MODULE eq $moduleName}class="active"{else}class=""{/if}>
-				<a href="{$moduleModel->getDefaultUrl()}&app={$SELECTED_MENU_CATEGORY}">
+			<li {if !$moduleModel->isCustomLink() && $MODULE eq $moduleName}class="active"{else}class=""{/if}>
+				<a href="{$moduleUrl}">
 					{$moduleModel->getModuleIcon()}
 					<span>{$translatedModuleLabel}</span>
 				</a>

@@ -15,6 +15,10 @@ $languageStrings = array(
     'LBL_SELECT_SUPPORT_MODULES' => 'Select modules to show in Support app',
     'LBL_SELECT_PROJECT_MODULES' => 'Select modules to show in Project app',
     'LBL_SELECT_HIDDEN_MODULE' => 'Select Hidden Module',
+    'LBL_ADD_CUSTOM_LINK' => 'Add Custom Link',
+    'LBL_EDIT_CUSTOM_LINK' => 'Edit Custom Link',
+    'LBL_CUSTOM_LINK_LABEL' => 'Label',
+    'LBL_CUSTOM_LINK_URL' => 'URL',
     'LBL_INFO' => 'info',
     'LBL_MENU_EDITOR_INFO' => 'Drag and drop a Module to move/re-order it. You can Remove a Module from the App and Add it back later.',
 );
@@ -25,5 +29,8 @@ $jsLanguageStrings = Array (
     'JS_MODULE_REMOVED' => 'Module removed successfully',
     'JS_MODULE_ADD_SUCCESS' => 'Module(s) added successfuly',
     'JS_PLEASE_SELECT_A_MODULE' => 'Please select a Module',
+    'JS_CUSTOM_LINK_FIELDS_REQUIRED' => 'Label and URL are required',
+    'JS_CUSTOM_LINK_ADDED_SUCCESS' => 'Custom link added successfully',
+    'JS_CUSTOM_LINK_UPDATED_SUCCESS' => 'Custom link updated successfully',
 )
 ?>

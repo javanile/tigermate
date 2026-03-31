@@ -80,6 +80,26 @@ class Settings_MenuEditor_Module_Model extends Settings_Vtiger_Module_Model {
 			}
 		}
 
+		$customLinks = Settings_MenuEditor_CustomLink_Model::getAllVisibleByApp();
+		foreach ($customLinks as $appname => $appLinks) {
+			foreach ($appLinks as $linkKey => $linkModel) {
+				$modules[$appname][$linkKey] = $linkModel;
+			}
+		}
+
+		foreach ($modules as $appname => $appEntries) {
+			uasort($appEntries, function($left, $right) {
+				$leftSequence = (int) $left->get('app2tab_sequence');
+				$rightSequence = (int) $right->get('app2tab_sequence');
+				if ($leftSequence === $rightSequence) {
+					return strcmp($left->get('name'), $right->get('name'));
+				}
+
+				return ($leftSequence < $rightSequence) ? -1 : 1;
+			});
+			$modules[$appname] = $appEntries;
+		}
+
 		return $modules;
 	}
 

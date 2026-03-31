@@ -2,7 +2,7 @@
 up:
 	@docker compose up --build --force-recreate --remove-orphans -d
 
-start: fix-permissions up
+start: fix-permissions up watch-assets
 	@echo "Visit: http://localhost:8080"
 
 restart: fix-permissions
@@ -12,9 +12,20 @@ restart: fix-permissions
 	@docker compose up --build --force-recreate --remove-orphans -d || true
 	@echo "Refreshing containers..."
 	@docker compose up -d && sleep 10
+	@bash contrib/watch.sh restart
 
 stop:
 	@docker compose stop
+	@bash contrib/watch.sh stop
+
+watch-assets:
+	@bash contrib/watch.sh start
+
+watch-assets-stop:
+	@bash contrib/watch.sh stop
+
+watch-assets-status:
+	@bash contrib/watch.sh status
 
 fix-permissions:
 	@touch lib/config.inc.php
