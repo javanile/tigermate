@@ -25,6 +25,7 @@
 	{/foreach}
 
 	<div class="left-block col-lg-4 col-md-4 col-sm-4">
+		{*
 		<div class="summaryView">
 			<div class="summaryViewHeader" style="margin-bottom: 15px;">
 				<h4 class="display-inline-block">{vtranslate('LBL_KEY_METRICS', $MODULE_NAME)}</h4>
@@ -52,6 +53,7 @@
 				{/foreach}
 			</div>
 		</div>
+		*}
 		{* Module Summary View*}
 		<div class="summaryView">
 			<div class="summaryViewHeader">
