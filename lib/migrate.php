@@ -45,6 +45,23 @@ if (!in_array('GoogleSync', $allScheduler)) {
     Vtiger_Cron::register( 'GoogleSync', 'cron/modules/Google/GoogleSync.service', 900, 'Settings', 1, 5, 'Recommended frequency for Google sync is 15 mins');
 }
 
+require_once 'modules/com_vtiger_workflow/VTTaskManager.inc';
+$existingDbq = $adb->pquery("SELECT id FROM com_vtiger_workflow_tasktypes WHERE tasktypename = ?", array('VTDatabaseQueryTask'));
+if ($adb->num_rows($existingDbq) === 0) {
+    VTTaskType::registerTaskType(array(
+        'name'         => 'VTDatabaseQueryTask',
+        'label'        => 'Database Query',
+        'classname'    => 'VTDatabaseQueryTask',
+        'classpath'    => 'modules/com_vtiger_workflow/tasks/VTDatabaseQueryTask.inc',
+        'templatepath' => 'modules/Settings/Workflows/Tasks/VTDatabaseQueryTask.tpl',
+        'modules'      => array('include' => array(), 'exclude' => array()),
+        'sourcemodule' => '',
+    ));
+    echo "Registered workflow task type: VTDatabaseQueryTask\n";
+} else {
+    echo "Workflow task type already registered: VTDatabaseQueryTask\n";
+}
+
 require_once 'modules/com_vtiger_workflow/VTEntityMethodManager.inc';
 $emm = new VTEntityMethodManager($adb);
 $universalMethods = $emm->methodsForModule('*');
