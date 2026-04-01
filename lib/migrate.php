@@ -1,11 +1,14 @@
 <?php
 
+
+require_once 'debug.php';
 include_once 'config.php';
 include_once 'include/Webservices/Relation.php';
 
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'includes/main/WebUI.php';
 include_once 'include/database/PearDatabase.php';
+
 
 ini_set('display_errors','on'); version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);   // DEBUGGING
 
@@ -40,4 +43,14 @@ $allScheduler = array_reduce(Vtiger_Cron::listAllActiveInstances(), function($re
 
 if (!in_array('GoogleSync', $allScheduler)) {
     Vtiger_Cron::register( 'GoogleSync', 'cron/modules/Google/GoogleSync.service', 900, 'Settings', 1, 5, 'Recommended frequency for Google sync is 15 mins');
+}
+
+require_once 'modules/com_vtiger_workflow/VTEntityMethodManager.inc';
+$emm = new VTEntityMethodManager($adb);
+$universalMethods = $emm->methodsForModule('*');
+if (!in_array('TestUniversalMethod', $universalMethods)) {
+    $emm->addEntityMethod('*', 'TestUniversalMethod', 'modules/com_vtiger_workflow/tasks/VTUniversalMethodHandler.php', 'VTEntityMethodTask_testUniversal');
+    echo "Registered universal workflow method: TestUniversalMethod\n";
+} else {
+    echo "Universal workflow method already registered: TestUniversalMethod\n";
 }

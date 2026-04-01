@@ -23,22 +23,26 @@ class VTEntityMethodManager{
 	
 	
 	
-	function executeMethod($entityData, $methodName){
+	function executeMethod($entityData, $methodName, $params = array()){
 		$adb = $this->adb;
 		$moduleName = $entityData->getModuleName();
-		$result = $adb->pquery("select function_path, function_name from com_vtiger_workflowtasks_entitymethod where module_name=? and method_name=?", array($moduleName, $methodName));
+		$result = $adb->pquery(
+			"SELECT function_path, function_name FROM com_vtiger_workflowtasks_entitymethod WHERE method_name=? AND (module_name=? OR module_name='*') ORDER BY (module_name='*') ASC LIMIT 1",
+			array($methodName, $moduleName)
+		);
 		if($adb->num_rows($result)!=0){
 			$data = $adb->raw_query_result_rowdata($result, 0);
-			$functionPath = $data['function_path'];
-			$functionName = $data['function_name'];
-			require_once($functionPath);
-			$functionName($entityData);
+			require_once($data['function_path']);
+			$data['function_name']($entityData, $params);
 		}
 	}
-	
+
 	function methodsForModule($moduleName){
 		$adb = $this->adb;
-		$result = $adb->pquery("select method_name from com_vtiger_workflowtasks_entitymethod where module_name=?", array($moduleName));
+		$result = $adb->pquery(
+			"SELECT method_name FROM com_vtiger_workflowtasks_entitymethod WHERE module_name=? OR module_name='*'",
+			array($moduleName)
+		);
 		$it = new SqlResultIterator($adb, $result);
 		$methodNames = array();
 		foreach($it as $row){

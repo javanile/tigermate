@@ -1,7 +1,7 @@
 <?php
 
 $debugError = false;
-if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
+if (strtoupper(@$_SERVER['REQUEST_METHOD']) == 'POST') {
     if ($_SERVER['HTTP_REFERER']) {
         $query = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_QUERY);
         parse_str($query, $params);

@@ -29,4 +29,24 @@
             </div>
         </div>
 	</div>
-{/strip}	
+	<div class="row form-group">
+        <div class="col-sm-6 col-xs-6">
+            <div class="row">
+                <div class="col-sm-3 col-xs-3">Param 1 :</div>
+                <div class="col-sm-8 col-xs-8">
+                    <input type="text" name="param1" class="inputElement" value="{$TASK_OBJECT->param1}">
+                </div>
+            </div>
+        </div>
+	</div>
+	<div class="row form-group">
+        <div class="col-sm-6 col-xs-6">
+            <div class="row">
+                <div class="col-sm-3 col-xs-3">Param 2 :</div>
+                <div class="col-sm-8 col-xs-8">
+                    <input type="text" name="param2" class="inputElement" value="{$TASK_OBJECT->param2}">
+                </div>
+            </div>
+        </div>
+	</div>
+{/strip}
