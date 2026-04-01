@@ -32,7 +32,7 @@ class VTDatabaseQueryTask extends VTTask {
         // dump full object last
         $dumpInfo .= "full_object: " . var_export($entityData, true) . "\n";
         $dumpInfo .= str_repeat('-', 80) . "\n\n";
-        file_put_contents(__FILE__ . '.dump', $dumpInfo, FILE_APPEND);
+        //file_put_contents(__FILE__ . '.dump', $dumpInfo, FILE_APPEND);
         $statements = self::splitStatements($this->query);
         $lastInsertId = null;
         $lastRow = array();
