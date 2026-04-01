@@ -358,7 +358,7 @@ class VTFieldExpressionEvaluater{
 				$params = array_map(array($this, 'exec'), $expr->getParams());
 				$func = $this->operations[$op->value];
                 if (empty($func)) {
-                    throw new Exception("Operation '$op->value' not supported");
+                    die("[ERR] Operation '$op->value' not supported");
                 }
 				return $func($params);
 			}
