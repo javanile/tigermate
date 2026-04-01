@@ -54,3 +54,10 @@ if (!in_array('TestUniversalMethod', $universalMethods)) {
 } else {
     echo "Universal workflow method already registered: TestUniversalMethod\n";
 }
+
+if (!in_array('SecondTestMethod', $universalMethods)) {
+    $emm->addEntityMethod('*', 'SecondTestMethod', 'modules/com_vtiger_workflow/tasks/VTUniversalMethodHandler.php', 'VTEntityMethodTask_secondTest');
+    echo "Registered universal workflow method: SecondTestMethod\n";
+} else {
+    echo "Universal workflow method already registered: SecondTestMethod\n";
+}

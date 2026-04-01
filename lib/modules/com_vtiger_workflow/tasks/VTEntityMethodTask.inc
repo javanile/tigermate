@@ -12,11 +12,12 @@ class VTEntityMethodTask extends VTTask{
 	
 	public $executeImmediately = true;
 	
-	public function getFieldNames(){return array('methodName', 'param1', 'param2');}
+	public function getFieldNames(){return array('methodName', 'parameters');}
 	public function doTask($entityData){
 		global $adb;
 		$emm = new VTEntityMethodManager($adb);
-		$emm->executeMethod($entityData, $this->methodName, array('param1' => $this->param1, 'param2' => $this->param2));
+		$params = !empty($this->parameters) ? json_decode($this->parameters, true) : array();
+		$emm->executeMethod($entityData, $this->methodName, $params);
 	}
 }
 ?>

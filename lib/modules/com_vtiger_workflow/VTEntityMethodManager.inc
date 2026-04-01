@@ -68,6 +68,23 @@ class VTEntityMethodManager{
 	 * @param <String> Module Name
 	 * @param <String> Entity Method Name.
 	 */
+	function getMethodFields($moduleName, $methodName){
+		$adb = $this->adb;
+		$result = $adb->pquery(
+			"SELECT function_path, function_name FROM com_vtiger_workflowtasks_entitymethod WHERE method_name=? AND (module_name=? OR module_name='*') ORDER BY (module_name='*') ASC LIMIT 1",
+			array($methodName, $moduleName)
+		);
+		if($adb->num_rows($result) != 0){
+			$data = $adb->raw_query_result_rowdata($result, 0);
+			require_once($data['function_path']);
+			$fieldsFunc = $data['function_name'] . '_fields';
+			if(function_exists($fieldsFunc)){
+				return $fieldsFunc();
+			}
+		}
+		return array();
+	}
+
 	function removeEntityMethod($moduleName, $methodName){
 		$adb = $this->adb;
 		$adb->pquery("DELETE FROM com_vtiger_workflowtasks_entitymethod WHERE module_name = ? and method_name= ?", array($moduleName, $methodName));
