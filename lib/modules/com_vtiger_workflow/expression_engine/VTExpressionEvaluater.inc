@@ -308,6 +308,7 @@ class VTFieldExpressionEvaluater{
 
 		$this->operators = array(
 				'+'  => '__vt_add',
+                'sum'  => '__vt_add',
 				'-'  => '__vt_sub',
 				'*'  => '__vt_mul',
 				'/'  => '__vt_div',
