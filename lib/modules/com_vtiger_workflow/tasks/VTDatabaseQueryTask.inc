@@ -60,7 +60,9 @@ class VTDatabaseQueryTask extends VTTask {
     }
 
     public static function statementType(string $sql): string {
-        $upper = strtoupper(ltrim($sql));
+        // Strip leading -- comment lines before checking type
+        $stripped = preg_replace('/^\s*(--[^\n]*\n?)+/m', '', $sql);
+        $upper = strtoupper(ltrim($stripped));
         foreach (['SELECT', 'INSERT', 'UPDATE', 'REPLACE'] as $type) {
             if (str_starts_with($upper, $type)) return $type;
         }

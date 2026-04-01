@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <div id="dbq-results"></div>
+    <div id="dbq-results" style="padding-bottom:120px;"></div>
 </div>
 
 <script type="text/javascript">
