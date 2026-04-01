@@ -8,8 +8,8 @@
  * All Rights Reserved.
  ************************************************************************************/
 $flavorLanguageStrings = [
-    'Project'                                  => 'Gestione Cantieri',
-    'SINGLE_Project'                           => 'Gestione Cantiere',
+    'Project'                                  => 'Cantieri',
+    'SINGLE_Project'                           => 'Cantiere',
     'LBL_ADD_RECORD'                           => 'Aggiungi Cantiere',
     'LBL_RECORDS_LIST'                         => 'Lista Progetti',
     'LBL_PROJECT_INFORMATION'                  => 'Informationi Cantiere',
@@ -23,14 +23,14 @@ $flavorLanguageStrings = [
     'Progress'                                 => 'Progresso',
     'Type'                                     => 'Tipo',
     'Related to'                               => 'Relativi a',
-    'LBL_TASKS_OPEN'                           => 'Attivit&agrave; aperte',
-    'LBL_TASKS_DUE'                            => 'Attivit&agrave due ',
-    'LBL_TASKS_COMPLETED'                      => 'Attivit&agrave Completata',
+    'LBL_TASKS_OPEN'                           => 'Giornate aperte',
+    'LBL_TASKS_DUE'                            => 'Giornate in corso',
+    'LBL_TASKS_COMPLETED'                      => 'Giornate completate',
     'LBL_PEOPLE'                               => 'Persone',
     'LBL_CHARTS'                               => 'Grafici',
     'LBL_TASKS_LIST'                           => 'Lista attivit&agrave;', // TODO: Review
-    'LBL_MILESTONES'                           => 'Pietre miliari', // TODO: Review
-    'LBL_TASKS'                                => 'Attivit%agrave', // TODO: Review
+    'LBL_MILESTONES'                           => 'Lavorazioni', // TODO: Review
+    'LBL_TASKS'                                => 'Giornate', // TODO: Review
     'LBL_STATUS_IS'                            => 'Lo Stato  &egrave;', // TODO: Review
     'LBL_STATUS'                               => 'Stato', // TODO: Review
     'LBL_TICKET_PRIORITY'                      => 'Priorit&agrave;', // TODO: Review
