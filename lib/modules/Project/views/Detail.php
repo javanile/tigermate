@@ -117,7 +117,10 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$parentRecordModel = Vtiger_Record_Model::getInstanceById($parentId, $moduleName);
 		$projectTaskModel = Vtiger_Module_Model::getInstance('ProjectTask');
-		$projectTasks['tasks'] = $parentRecordModel->getProjectTasks();
+		$projectTasks['tasks'] = array_merge(
+			$parentRecordModel->getProjectTasks(),
+			$parentRecordModel->getProjectMilestones()
+		);
 		$projectTasks["selectedRow"] = 0;
 		$projectTasks["canWrite"] = true;
 		$projectTasks["canWriteOnParent"] = true;

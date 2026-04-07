@@ -78,3 +78,35 @@ if (!in_array('SecondTestMethod', $universalMethods)) {
 } else {
     echo "Universal workflow method already registered: SecondTestMethod\n";
 }
+
+// Add projectmilestonedeliverydate field to ProjectMilestone module
+$projectMilestoneModule = Vtiger_Module::getInstance('ProjectMilestone');
+if ($projectMilestoneModule) {
+    $existingField = Vtiger_Field::getInstance('projectmilestonedeliverydate', $projectMilestoneModule);
+    if (!$existingField) {
+        $block = Vtiger_Block::getInstance('LBL_PROJECT_MILESTONE_INFORMATION', $projectMilestoneModule);
+        if ($block) {
+            $field = new Vtiger_Field();
+            $field->name       = 'projectmilestonedeliverydate';
+            $field->label      = 'Delivery Date';
+            $field->table      = 'vtiger_projectmilestone';
+            $field->column     = 'projectmilestonedeliverydate';
+            $field->columntype = 'VARCHAR(255)';
+            $field->uitype     = 5;      // Date
+            $field->typeofdata = 'D~O';  // Date, Optional
+            $block->addField($field);
+            echo "Created field: projectmilestonedeliverydate on ProjectMilestone\n";
+        } else {
+            echo "ERROR: Block LBL_PROJECT_MILESTONE_INFORMATION not found on ProjectMilestone\n";
+        }
+    } else {
+        if ($existingField->label !== 'Delivery Date') {
+            $adb->pquery("UPDATE vtiger_field SET fieldlabel=? WHERE fieldname=?", ['Delivery Date', 'projectmilestonedeliverydate']);
+            echo "Fixed fieldlabel for projectmilestonedeliverydate\n";
+        } else {
+            echo "Field projectmilestonedeliverydate already exists and is correct\n";
+        }
+    }
+} else {
+    echo "ERROR: Module ProjectMilestone not found\n";
+}

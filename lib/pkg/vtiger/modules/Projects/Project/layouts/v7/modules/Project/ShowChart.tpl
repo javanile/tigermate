@@ -15,6 +15,10 @@
         {Project_Record_Model::getGanttStatusCss($STATUS, $COLOR)}
         {Project_Record_Model::getGanttSvgStatusCss($STATUS, $COLOR)}
     {/foreach}
+    .taskStatusSVG[status="STATUS_MILESTONE"] { fill: #e67e22; }
+    .taskStatus[status="STATUS_MILESTONE"]    { background-color: #e67e22; }
+    .taskBoxSVG[data-type="milestone"] .taskLayout { fill: url(#taskGrad); opacity: 0.85; }
+    .taskBoxSVG[data-type="milestone"] .taskLayout { stroke: #e67e22; stroke-width: 2px; }
 </style>
 {if !empty($PROJECT_TASKS['tasks'])}
     <div class="pull-right" style="margin-right: 5px;">
@@ -33,13 +37,18 @@
                 {vtranslate('LBL_REPORT_PRINT', 'Reports')}
             </a>
         </span>
+        <span style="margin: 2px;">
+            <button class="btn btn-default" id="toggleGanttLegend" title="{vtranslate('LBL_INFO',$MODULE)}">
+                <i class="fa fa-info-circle"></i>
+            </button>
+        </span>
     </div>
     <br />
     <br />
     <input id="projecttasks"  type="hidden" value="{Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($PROJECT_TASKS))}">
     <input id="originalprojecttasks" type="hidden" value="{Vtiger_Util_Helper::toSafeHTML(Zend_Json::encode($PROJECT_TASKS))}">
     <input id="userDateFormat" type="hidden" value="{$USER_DATE_FORMAT}">
-    <div id="workSpace" style="padding:0px;border:1px solid #e5e5e5;position:relative;margin:0 5px"></div>
+    <div id="workSpace" style="padding:0px;border:1px solid #e5e5e5;position:relative;margin:0 5px;overflow:auto;"></div>
     <div id="gantEditorTemplates" style="display:none;">
         <div class="__template__" type="TASKSEDITHEAD"><!--
         <table class="gdfTable" cellspacing="0" cellpadding="0">
@@ -190,50 +199,72 @@
         </tr>
         --></div>
     </div>
-    <div class="row" style="margin-top: 10px; padding: 5px;">
-        <div class="col-lg-4">
-            <table class="table table-condensed table-striped table-bordered ">
-                <thead>
-                    <tr>
-                        <td></td>
-                        <td><b>{vtranslate('LBL_STATUS', $MODULE)}</b></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {foreach from=$TASK_STATUS item=STATUS_NAME}
-                        {assign var=STATUS_NAME value=trim($STATUS_NAME)}
+    <div id="ganttLegendPanel" style="display:none; margin-top: 10px;">
+        <div class="row" style="padding: 5px;">
+            <div class="col-lg-4">
+                <table class="table table-condensed table-striped table-bordered ">
+                    <thead>
                         <tr>
-                            <td>
-                                <div class="row">
-                                    <div class="col-lg-3"> &nbsp; </div>
-                                    <div class="col-lg-3">
-                                        <div status="{Project_Record_Model::getGanttStatus($STATUS_NAME)}" class="taskStatus cvcColorSquare"></div>
-                                    </div>
-                                    {if $STATUS_FIELD_MODEL->isEditable()}
-                                        <div class="col-lg-3">
-                                            <a onclick="javascript:Project_Detail_Js.showEditColorModel('index.php?module={$MODULE}&view=EditAjax&mode=editColor&status={$STATUS_NAME}', this)" data-status="{$STATUS_NAME}" data-color="{$TASK_STATUS_COLOR[$STATUS_NAME]}"><i title="{vtranslate('LBL_EDIT_COLOR', $MODULE)}" class="fa fa-pencil alignMiddle"></i></a>&nbsp;
-                                        </div>
-                                    {/if}
-                                </div>
-                            </td>
-                            <td>{vtranslate($STATUS_NAME,'ProjectTask')}</td>
+                            <td></td>
+                            <td><b>{vtranslate('LBL_STATUS', $MODULE)}</b></td>
                         </tr>
-                    {/foreach}
-                </tbody>
-            </table>
-        </div>
-        <div class="col-lg-8"> 
-            <div style="position: relative;width:93%" class="row alert-info well">
-                <span class="span alert-info">
-                    <span style="padding: 1%"><b>{vtranslate('LBL_INFO',$MODULE)}</b></span>
-                    <ul>
-                        <li>{vtranslate('LBL_GANTT_INFO1', $MODULE)}</li>
-                        <li>{vtranslate('LBL_GANTT_INFO2', $MODULE)}</li>
-                    </ul>
-                </span>
+                    </thead>
+                    <tbody>
+                        {foreach from=$TASK_STATUS item=STATUS_NAME}
+                            {assign var=STATUS_NAME value=trim($STATUS_NAME)}
+                            <tr>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-lg-3"> &nbsp; </div>
+                                        <div class="col-lg-3">
+                                            <div status="{Project_Record_Model::getGanttStatus($STATUS_NAME)}" class="taskStatus cvcColorSquare"></div>
+                                        </div>
+                                        {if $STATUS_FIELD_MODEL->isEditable()}
+                                            <div class="col-lg-3">
+                                                <a onclick="javascript:Project_Detail_Js.showEditColorModel('index.php?module={$MODULE}&view=EditAjax&mode=editColor&status={$STATUS_NAME}', this)" data-status="{$STATUS_NAME}" data-color="{$TASK_STATUS_COLOR[$STATUS_NAME]}"><i title="{vtranslate('LBL_EDIT_COLOR', $MODULE)}" class="fa fa-pencil alignMiddle"></i></a>&nbsp;
+                                            </div>
+                                        {/if}
+                                    </div>
+                                </td>
+                                <td>{vtranslate($STATUS_NAME,'ProjectTask')}</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-8">
+                <div style="position: relative;width:93%" class="row alert-info well">
+                    <span class="span alert-info">
+                        <span style="padding: 1%"><b>{vtranslate('LBL_INFO',$MODULE)}</b></span>
+                        <ul>
+                            <li>{vtranslate('LBL_GANTT_INFO1', $MODULE)}</li>
+                            <li>{vtranslate('LBL_GANTT_INFO2', $MODULE)}</li>
+                        </ul>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            function resizeGanttWorkspace() {
+                var $ws = $('#workSpace');
+                if ($ws.length === 0) return;
+                var offsetTop = $ws.offset().top;
+                var windowHeight = $(window).height();
+                var legendHeight = $('#ganttLegendPanel').is(':visible') ? $('#ganttLegendPanel').outerHeight(true) : 0;
+                var newHeight = windowHeight - offsetTop - legendHeight - 20;
+                if (newHeight < 200) newHeight = 200;
+                $ws.css('height', newHeight + 'px');
+            }
+            resizeGanttWorkspace();
+            $(window).on('resize', resizeGanttWorkspace);
+            $('#toggleGanttLegend').on('click', function() {
+                $(this).toggleClass('active');
+                $('#ganttLegendPanel').slideToggle(resizeGanttWorkspace);
+            });
+        });
+    </script>
 {else} 
     <table class="emptyRecordsDiv">
 		<tbody>

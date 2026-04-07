@@ -17,6 +17,7 @@ $languageStrings = [
     'LBL_PROJECT_MILESTONE_INFORMATION'    => 'Dettagli Lavorazione',
     'Project Milestone Name'               => 'Nome Lavorazione',
     'Milestone Date'                       => 'Data Lavorazione',
+    'Delivery Date'                        => 'Data Consegna',
     'Project Milestone No'                 => 'Numero Lavorazione',
     'Type'                                 => 'Tipo Lavorazione',
     //picklist values

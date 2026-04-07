@@ -17,6 +17,7 @@ $languageStrings = [
     'LBL_PROJECT_MILESTONE_INFORMATION'    => 'Dettagli pietra miliare cantiere',
     'Project Milestone Name'               => 'Nome pietra miliare cantiere',
     'Milestone Date'                       => 'Data pietra miliare',
+    'Delivery Date'                        => 'Data Consegna',
     'Project Milestone No'                 => 'Numero pietra miliare cantiere',
     'Type'                                 => 'Tipo',
     //picklist values

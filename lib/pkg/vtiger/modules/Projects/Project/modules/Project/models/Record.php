@@ -124,6 +124,43 @@
 		return $duration;
 	}
 
+	/**
+	 * Function to get the project milestones for the gantt chart
+	 * @return <Array> - $milestones as gantt-compatible task objects
+	 */
+	public function getProjectMilestones() {
+		$recordId = $this->getId();
+		$db = PearDatabase::getInstance();
+
+		$sql = "SELECT projectmilestoneid as recordid, projectmilestonename as name,
+					   projectmilestonedate as startdate, projectmilestonedeliverydate as enddate
+				FROM vtiger_projectmilestone
+				INNER JOIN vtiger_crmentity ON vtiger_projectmilestone.projectmilestoneid = vtiger_crmentity.crmid
+				WHERE projectid=? AND vtiger_crmentity.deleted=0
+				  AND vtiger_projectmilestone.projectmilestonedate IS NOT NULL";
+
+		$result = $db->pquery($sql, array($recordId));
+		$milestones = [];
+		$i = -10001;
+
+		while ($record = $db->fetchByAssoc($result)) {
+			$startDate = $record['startdate'];
+			$endDate   = !empty($record['enddate']) ? $record['enddate'] : $startDate;
+			$record['id']       = $i;
+			$record['name']     = decode_html(textlength_check($record['name']));
+			$record['status']   = 'STATUS_MILESTONE';
+			$record['type']     = 'milestone';
+			$record['start']    = strtotime($startDate) * 1000;
+			$record['end']      = strtotime($endDate) * 1000;
+			$record['duration'] = $this->getDuration($startDate, $endDate);
+			$record['readonly'] = true;
+			$milestones[] = $record;
+			$i--;
+		}
+
+		return $milestones;
+	}
+
 	static public function getGanttStatus($status) {
 		switch($status) {
 			case 'Open'			: return 'STATUS_UNDEFINED';
