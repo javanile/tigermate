@@ -13,17 +13,17 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 RUN a2enmod rewrite
 
 ## Xdebug
-RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
-RUN printf "%s\n" \
-	"xdebug.mode = debug,profile" \
-	"xdebug.start_with_request = trigger" \
-	"xdebug.idekey = PHPSTORM" \
-	"xdebug.client_host = xdebug" \
-	"xdebug.client_port = 9001" \
-	"xdebug.output_dir = /tmp/profiler" \
-	"max_execution_time = 0" \
-	"max_input_time = 0" \
-	"max_input_vars = 10000" \
-	> /usr/local/etc/php/conf.d/xdebug.ini
+#RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
+#RUN printf "%s\n" \
+#	"xdebug.mode = debug,profile" \
+#	"xdebug.start_with_request = trigger" \
+#	"xdebug.idekey = PHPSTORM" \
+#	"xdebug.client_host = xdebug" \
+#	"xdebug.client_port = 9001" \
+#	"xdebug.output_dir = /tmp/profiler" \
+#	"max_execution_time = 0" \
+#	"max_input_time = 0" \
+#	"max_input_vars = 10000" \
+#	> /usr/local/etc/php/conf.d/xdebug.ini
 
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
