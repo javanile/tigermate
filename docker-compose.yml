@@ -32,7 +32,7 @@ services:
   crontab:
     build: docker/crontab
     command:
-      - "*/5 * * * * cd /app && make schedule"
+      - "* * * * * cd /app && make schedule"
     volumes:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock
