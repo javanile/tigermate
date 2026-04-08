@@ -45,6 +45,29 @@ if (!in_array('GoogleSync', $allScheduler)) {
     Vtiger_Cron::register( 'GoogleSync', 'cron/modules/Google/GoogleSync.service', 900, 'Settings', 1, 5, 'Recommended frequency for Google sync is 15 mins');
 }
 
+$workflowManagerPath = 'modules/com_vtiger_workflow/VTWorkflowManager.inc';
+$workflowManagerContents = file_get_contents($workflowManagerPath);
+$legacyScheduledWorkflowClause = "AND (nexttrigger_time = '' OR nexttrigger_time IS NULL OR nexttrigger_time <= ?)";
+$fixedScheduledWorkflowClause = "AND (nexttrigger_time IS NULL OR nexttrigger_time <= ?)";
+
+if ($workflowManagerContents === false) {
+    echo "ERROR: Unable to read $workflowManagerPath\n";
+} elseif (strpos($workflowManagerContents, $legacyScheduledWorkflowClause) !== false) {
+    $updatedWorkflowManagerContents = str_replace(
+        $legacyScheduledWorkflowClause,
+        $fixedScheduledWorkflowClause,
+        $workflowManagerContents
+    );
+
+    if ($updatedWorkflowManagerContents !== $workflowManagerContents && file_put_contents($workflowManagerPath, $updatedWorkflowManagerContents) !== false) {
+        echo "Patched scheduled workflow query for MySQL 8 compatibility in $workflowManagerPath\n";
+    } else {
+        echo "ERROR: Unable to patch scheduled workflow query in $workflowManagerPath\n";
+    }
+} else {
+    echo "Scheduled workflow query already compatible in $workflowManagerPath\n";
+}
+
 require_once 'modules/com_vtiger_workflow/VTTaskManager.inc';
 $existingDbq = $adb->pquery("SELECT id FROM com_vtiger_workflow_tasktypes WHERE tasktypename = ?", array('VTDatabaseQueryTask'));
 if ($adb->num_rows($existingDbq) === 0) {

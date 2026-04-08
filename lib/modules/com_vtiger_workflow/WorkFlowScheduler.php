@@ -18,6 +18,14 @@ class WorkFlowScheduler {
 	private $user;
 	private $db;
 
+	private function debugLog($message, $context = array()) {
+		$line = '[WF-DEBUG] ' . $message;
+		if (!empty($context)) {
+			$line .= ' ' . json_encode($context);
+		}
+		echo $line . PHP_EOL;
+	}
+
 	public function __construct($adb) {
 		$util = new VTWorkflowUtils();
 		$adminUser = $util->adminUser();
@@ -57,12 +65,25 @@ class WorkFlowScheduler {
 	public function getEligibleWorkflowRecords($workflow, $start=0, $limit=0) {
 		$adb = $this->db;
 		$query = $this->getWorkflowQuery($workflow, $start, $limit);
+		$this->debugLog('Eligible records query', array(
+			'workflow_id' => $workflow->id,
+			'workflow_name' => $workflow->name,
+			'module' => $workflow->moduleName,
+			'page' => $start,
+			'limit' => $limit,
+			'query' => $query,
+		));
 		$result = $adb->pquery($query, array());
 		$noOfRecords = $adb->num_rows($result);
 		$recordsList = array();
 		for ($i = 0; $i < $noOfRecords; ++$i) {
 			$recordsList[] = $adb->query_result($result, $i, 0);
 		}
+		$this->debugLog('Eligible records result', array(
+			'workflow_id' => $workflow->id,
+			'count' => $noOfRecords,
+			'record_ids' => $recordsList,
+		));
 		$result = null;
 		return $recordsList;
 	}
@@ -86,10 +107,35 @@ class WorkFlowScheduler {
 
 		$scheduledWorkflows = $vtWorflowManager->getScheduledWorkflows($currentTimestamp);
 		$noOfScheduledWorkflows = php7_count($scheduledWorkflows);
+		$this->debugLog('Scheduled workflows fetched', array(
+			'current_timestamp' => $currentTimestamp,
+			'count' => $noOfScheduledWorkflows,
+		));
 		for ($i = 0; $i < $noOfScheduledWorkflows; ++$i) {
 			$workflow = $scheduledWorkflows[$i];
+			$this->debugLog('Processing workflow', array(
+				'workflow_id' => $workflow->id,
+				'workflow_name' => $workflow->name,
+				'module' => $workflow->moduleName,
+				'schtypeid' => $workflow->schtypeid,
+				'nexttrigger_time' => $workflow->nexttrigger_time,
+			));
 			$tm = new VTTaskManager($adb);
 			$tasks = $tm->getTasksForWorkflow($workflow->id);
+			$taskSummaries = array();
+			foreach ($tasks as $task) {
+				$taskSummaries[] = array(
+					'id' => isset($task->id) ? $task->id : null,
+					'class' => get_class($task),
+					'summary' => isset($task->summary) ? $task->summary : null,
+					'active' => !empty($task->active),
+					'immediate' => !empty($task->executeImmediately),
+				);
+			}
+			$this->debugLog('Workflow tasks loaded', array(
+				'workflow_id' => $workflow->id,
+				'tasks' => $taskSummaries,
+			));
 			if ($tasks) {
 				// atleast one task for the workflow should be active
 				$taskActive = false;
@@ -105,7 +151,13 @@ class WorkFlowScheduler {
 					$records = $this->getEligibleWorkflowRecords($workflow, $page++, 100);
 					$noOfRecords = php7_count($records);
 					
-					if ($noOfRecords < 1) break;
+					if ($noOfRecords < 1) {
+						$this->debugLog('No eligible records for workflow page', array(
+							'workflow_id' => $workflow->id,
+							'page' => $page - 1,
+						));
+						break;
+					}
 					
 					for ($j = 0; $j < $noOfRecords; ++$j) {
 						$recordId = $records[$j];
@@ -115,9 +167,20 @@ class WorkFlowScheduler {
 						} else {
 							$moduleName = $workflow->moduleName;
 						}
+						$this->debugLog('Evaluating record for workflow', array(
+							'workflow_id' => $workflow->id,
+							'record_id' => $recordId,
+							'resolved_module' => $moduleName,
+						));
 						$wsEntityId = vtws_getWebserviceEntityId($moduleName, $recordId);
 						$entityData = $entityCache->forId($wsEntityId);
 						$data = $entityData->getData();
+						$this->debugLog('Loaded entity data for workflow record', array(
+							'workflow_id' => $workflow->id,
+							'record_id' => $recordId,
+							'subject' => isset($data['subject']) ? $data['subject'] : null,
+							'activitytype' => isset($data['activitytype']) ? $data['activitytype'] : null,
+						));
 						//Setting events contact_id values to $_REQUEST object as save_module function of Activity.php depends on $_REQUEST
 						if($moduleName == 'Events') {
 							Vtiger_Functions::setEventsContactIdToRequest($recordId);
@@ -142,18 +205,43 @@ class WorkFlowScheduler {
 								}else{
 									$delay = 0;
 								}
+								$this->debugLog('About to execute task', array(
+									'workflow_id' => $workflow->id,
+									'record_id' => $recordId,
+									'task_id' => isset($task->id) ? $task->id : null,
+									'task_class' => $taskClassName,
+									'immediate' => !empty($task->executeImmediately),
+									'delay' => $delay,
+								));
 
 								if ($task->executeImmediately == true) {
 									$task->doTask($entityData);
+									$this->debugLog('Executed immediate task', array(
+										'workflow_id' => $workflow->id,
+										'record_id' => $recordId,
+										'task_id' => isset($task->id) ? $task->id : null,
+									));
 								} else {
 									$taskQueue->queueTask($task->id, $entityData->getId(), $delay);
+									$this->debugLog('Queued delayed task', array(
+										'workflow_id' => $workflow->id,
+										'record_id' => $recordId,
+										'task_id' => isset($task->id) ? $task->id : null,
+										'delay' => $delay,
+									));
 								}
 							}
 						}
 					}
 				} while(true);
 			}
+			$oldNextTriggerTime = $workflow->nexttrigger_time;
 			$vtWorflowManager->updateNexTriggerTime($workflow);
+			$this->debugLog('Updated workflow next trigger time', array(
+				'workflow_id' => $workflow->id,
+				'previous' => $oldNextTriggerTime,
+				'current' => $workflow->nexttrigger_time,
+			));
 		}
 		$scheduledWorkflows = null;
 	}
