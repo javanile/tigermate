@@ -12,6 +12,7 @@
 {strip}
 {assign var="FIELD_INFO" value=$FIELD_MODEL->getFieldInfo()}
 {assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
+{assign var="DECIMAL_SYMBOL" value=$USER_MODEL->get('currency_decimal_separator')}
 {if $MODULE eq 'HelpDesk' && ($FIELD_MODEL->get('name') eq 'days' || $FIELD_MODEL->get('name') eq 'hours')}
 	{assign var="FIELD_VALUE" value=$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'))}
 {else if $FIELD_MODEL->getFieldDataType() eq 'double'}
@@ -24,6 +25,7 @@
 {/if}
 <input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="inputElement" name="{$FIELD_NAME}"
 value="{$FIELD_VALUE}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
+data-decimal-symbol="{$DECIMAL_SYMBOL}"
 {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
 {if php7_count($FIELD_INFO['validator'])}
     data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'

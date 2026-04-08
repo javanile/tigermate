@@ -31,6 +31,10 @@ fix-permissions:
 	@touch lib/config.inc.php
 	@docker compose run --rm tigermate bash -c "chmod 777 -R lib/modules"
 	@docker compose run --rm tigermate bash -c "\
+		mkdir -p lib/languages/custom && \
+		chown -R www-data:www-data lib/languages/custom \
+	"
+	@docker compose run --rm tigermate bash -c "\
 		chmod 777 \
 			lib/tabdata.php lib/config.inc.php lib/parent_tabdata.php \
 			lib/cache lib/storage lib/user_privileges/ lib/test lib/modules lib/cron/modules lib/logs \

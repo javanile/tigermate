@@ -16,6 +16,7 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         $this->exposeMethod('remove');
         $this->exposeMethod('assignValueToRole');
         $this->exposeMethod('saveOrder');
+        $this->exposeMethod('saveSync');
         $this->exposeMethod('enableOrDisable');
         $this->exposeMethod('edit');
     }
@@ -97,6 +98,8 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
 				$result['id'.$i] = $id['id'];
 			}
             $moduleModel->handleLabels($moduleName, $newValuesArray, array(), 'add');
+            $moduleModel->syncAddedValues($fieldModel->getId(), $newValuesArray, $rolesSelected, $selectedColor);
+            $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
 			$response->setResult($result);
         }  catch (Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
@@ -119,12 +122,17 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         
         if($moduleName == 'Events' && ($pickListFieldName == 'activitytype' || $pickListFieldName == 'eventstatus')) {
              $this->updateDefaultPicklistValues($pickListFieldName,$oldValue,$newValue);
-        }   
+        }
         $moduleModel = new Settings_Picklist_Module_Model();
         $response = new Vtiger_Response();
         try{
             $status = $moduleModel->renamePickListValues($pickListFieldName, $oldValue, $newValue, $moduleName, $id, $rolesList, $color);
             $moduleModel->handleLabels($moduleName,$newValue,$oldValue,'rename');
+            $fieldModel = Settings_Picklist_Field_Model::getInstance($pickListFieldName, Settings_Picklist_Module_Model::getInstance($moduleName));
+            if($fieldModel) {
+                $moduleModel->syncRenamedValue($fieldModel->getId(), $oldValue, $newValue, $color);
+                $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
+            }
             $response->setResult(array('success',$status));
         } catch (Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
@@ -140,17 +148,32 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         $moduleModel = Settings_Picklist_Module_Model::getInstance($moduleName);
         $pickListDeleteValue = $moduleModel->getActualPicklistValues($valueToDelete,$pickListFieldName);
 
-		if($moduleName == 'Events' && ($pickListFieldName == 'activitytype' || $pickListFieldName == 'eventstatus')) {
+        if($moduleName == 'Events' && ($pickListFieldName == 'activitytype' || $pickListFieldName == 'eventstatus')) {
 			$db = PearDatabase::getInstance();
 			$primaryKey = Vtiger_Util_Helper::getPickListId($pickListFieldName);
 			$replaceValueQuery = $db->pquery("SELECT $pickListFieldName FROM ".$moduleModel->getPickListTableName($pickListFieldName)." WHERE $primaryKey IN (".generateQuestionMarks($replaceValue).")",array($replaceValue));
 			$actualReplaceValue = decode_html($db->query_result($replaceValueQuery,0,$pickListFieldName));
 			$this->updateDefaultPicklistValues($pickListFieldName,$pickListDeleteValue,$actualReplaceValue);
-        } 
+        } else {
+            $actualReplaceValue = '';
+            if(!empty($replaceValue)) {
+                $db = PearDatabase::getInstance();
+                $primaryKey = Vtiger_Util_Helper::getPickListId($pickListFieldName);
+                $replaceValueQuery = $db->pquery("SELECT $pickListFieldName FROM ".$moduleModel->getPickListTableName($pickListFieldName)." WHERE $primaryKey IN (".generateQuestionMarks($replaceValue).")",array($replaceValue));
+                if($db->num_rows($replaceValueQuery) > 0) {
+                    $actualReplaceValue = decode_html($db->query_result($replaceValueQuery,0,$pickListFieldName));
+                }
+            }
+        }
         $response = new Vtiger_Response();
         try{
             $status = $moduleModel->remove($pickListFieldName, $valueToDelete, $replaceValue, $moduleName);
             $moduleModel->handleLabels($moduleName,array(),$pickListDeleteValue,'delete');
+            $fieldModel = Settings_Picklist_Field_Model::getInstance($pickListFieldName, $moduleModel);
+            if($fieldModel) {
+                $moduleModel->syncRemovedValues($fieldModel->getId(), $pickListDeleteValue, $actualReplaceValue);
+                $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
+            }
             $response->setResult(array('success',$status));
         } catch (Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
@@ -202,7 +225,28 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         $response = new Vtiger_Response();
         try{
             $moduleModel->updateSequence($pickListFieldName, $picklistValues, $rolesList);
+            $fieldModel = Settings_Picklist_Field_Model::getInstance($pickListFieldName, Settings_Picklist_Module_Model::getInstance($request->get('source_module')));
+            if($fieldModel) {
+                $moduleModel->syncSequence($fieldModel->getId(), $picklistValues);
+                $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
+            }
             $response->setResult(array('success',true));
+        } catch (Exception $e) {
+            $response->setError($e->getCode(), $e->getMessage());
+        }
+        $response->emit();
+    }
+
+    public function saveSync(Vtiger_Request $request) {
+        $fieldId = $request->get('pickListFieldId');
+        $linkedFieldIds = $request->get('linkedFieldIds', array());
+
+        $moduleModel = new Settings_Picklist_Module_Model();
+        $response = new Vtiger_Response();
+        try {
+            $moduleModel->savePicklistSyncLinks($fieldId, $linkedFieldIds);
+            $moduleModel->alignLinkedPicklistFields($fieldId);
+            $response->setResult(array('success', true));
         } catch (Exception $e) {
             $response->setError($e->getCode(), $e->getMessage());
         }
@@ -253,6 +297,11 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         if($oldValue != $newValue && empty($nonEditablePicklistValues[$id])) {
             try{
                 $status = $moduleModel->renamePickListValues($pickListFieldName, $oldValue, $newValue, $moduleName, $id, $rolesList, $color);
+                $fieldModel = Settings_Picklist_Field_Model::getInstance($pickListFieldName, Settings_Picklist_Module_Model::getInstance($moduleName));
+                if($fieldModel) {
+                    $moduleModel->syncRenamedValue($fieldModel->getId(), $oldValue, $newValue, $color);
+                    $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
+                }
                 $response->setResult(array('success',$status));
             } catch (Exception $e) {
                 $response->setError($e->getCode(), $e->getMessage());
@@ -260,6 +309,11 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
         } else {
             if($color) {
                 $status = $moduleModel->updatePicklistColor($pickListFieldName, $id, $color);
+                $fieldModel = Settings_Picklist_Field_Model::getInstance($pickListFieldName, Settings_Picklist_Module_Model::getInstance($moduleName));
+                if($fieldModel) {
+                    $moduleModel->syncRenamedValue($fieldModel->getId(), $oldValue, $oldValue, $color);
+                    $moduleModel->alignLinkedPicklistFields($fieldModel->getId());
+                }
                 $response->setResult(array('success',$status));
             }
         }

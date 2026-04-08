@@ -12,6 +12,7 @@
 {strip}
 {assign var="FIELD_INFO" value=$FIELD_MODEL->getFieldInfo()}
 {assign var="SPECIAL_VALIDATOR" value=$FIELD_MODEL->getValidator()}
+{assign var="DECIMAL_SYMBOL" value=$USER_MODEL->get('currency_decimal_separator')}
 {if (!$FIELD_NAME)}
     {assign var="FIELD_NAME" value=$FIELD_MODEL->getFieldName()}
 {/if}
@@ -20,7 +21,7 @@
 	<span class="input-group-addon input-group-addon-right">{$USER_MODEL->get('currency_symbol')}</span>
 	<input id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" type="text" class="inputElement currencyField" name="{$FIELD_NAME}"
 	value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
-    {if $FIELD_INFO["mandatory"] eq true} data-rule-required = "true" {/if} data-rule-currency='true'
+    {if $FIELD_INFO["mandatory"] eq true} data-rule-required = "true" {/if} data-rule-currency='true' data-decimal-symbol="{$DECIMAL_SYMBOL}"
     {if php7_count($FIELD_INFO['validator'])}
         data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
     {/if}
@@ -31,7 +32,7 @@
         <span class="input-group-addon input-group-addon-right" id="baseCurrencySymbol">{$BASE_CURRENCY_SYMBOL}</span>
         <input id="{$MODULE}-editview-fieldname-{$FIELD_NAME}"  type="text" class="inputElement unitPrice currencyField" name="{$FIELD_NAME}"
             value="{$FIELD_MODEL->getDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
-            data-decimal-separator='{$USER_MODEL->get('currency_decimal_separator')}' data-group-separator='{$USER_MODEL->get('currency_grouping_separator')}' data-number-of-decimal-places='{$USER_MODEL->get('no_of_currency_decimals')}'
+            data-decimal-separator='{$USER_MODEL->get('currency_decimal_separator')}' data-decimal-symbol="{$DECIMAL_SYMBOL}" data-group-separator='{$USER_MODEL->get('currency_grouping_separator')}' data-number-of-decimal-places='{$USER_MODEL->get('no_of_currency_decimals')}'
             {if $FIELD_INFO["mandatory"] eq true} data-rule-required = "true" {/if} data-rule-currency='true'
             {if php7_count($FIELD_INFO['validator'])}
                 data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
@@ -52,7 +53,7 @@
     <span class="input-group-addon" id="basic-addon1">{$USER_MODEL->get('currency_symbol')}</span>
     <input type="text" class="input-lg currencyField" name="{$FIELD_NAME}"
         value="{$FIELD_MODEL->getEditViewDisplayValue($FIELD_MODEL->get('fieldvalue'))}" {if !empty($SPECIAL_VALIDATOR)}data-validator={Zend_Json::encode($SPECIAL_VALIDATOR)}{/if}
-        {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} data-rule-currency='true'
+        {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if} data-rule-currency='true' data-decimal-symbol="{$DECIMAL_SYMBOL}"
         {if php7_count($FIELD_INFO['validator'])}
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}

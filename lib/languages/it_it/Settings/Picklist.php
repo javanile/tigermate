@@ -43,6 +43,12 @@ $languageStrings = [
     'Calendar' => 'Compito',
 
     'LBL_NON_EDITABLE_PICKLIST_VALUES' => 'Non I Valori Modificabili',
+    'LBL_SYNC_WITH_PICKLISTS' => 'Sincronizza con',
+    'LBL_SELECT_SYNC_PICKLISTS' => 'Scegli i campi picklist collegati',
+    'LBL_SAVE_SYNC_CONNECTIONS' => 'Salva connessioni',
+    'LBL_PICKLIST_SYNC_INFO' => 'Le modifiche a valori, rinomina, eliminazione e ordinamento vengono replicate in modo bidirezionale sui campi collegati.',
+    'LBL_SYNCED_PICKLIST_FIELDS' => 'Campi sincronizzati',
+    'LBL_NO_SYNC_PICKLISTS_SELECTED' => 'Nessun campo sincronizzato selezionato',
 
 ];
 $jsLanguageStrings = [
@@ -60,5 +66,6 @@ $jsLanguageStrings = [
 
     'JS_SPECIAL_CHARACTERS' => 'I Caratteri speciali, come',
     'JS_NOT_ALLOWED'        => 'non sono ammessi',
+    'JS_PICKLIST_SYNC_SAVED_SUCCESSFULLY' => 'Connessioni di sincronizzazione salvate correttamente',
 
 ];

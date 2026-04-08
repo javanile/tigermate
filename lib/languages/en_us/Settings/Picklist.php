@@ -40,6 +40,12 @@ $languageStrings = array(
     'NO_PICKLIST_FIELDS'=> 'do not have any picklist fields',
 	'LBL_NON_EDITABLE_PICKLIST_VALUES' => 'Non Editable Values',
     'LBL_EDIT_PICKLIST_ITEM' => 'Edit Picklist Item',
+	'LBL_SYNC_WITH_PICKLISTS' => 'Sync with',
+	'LBL_SELECT_SYNC_PICKLISTS' => 'Choose linked picklist fields',
+	'LBL_SAVE_SYNC_CONNECTIONS' => 'Save connections',
+	'LBL_PICKLIST_SYNC_INFO' => 'Value add, rename, delete and ordering changes are replicated bidirectionally across linked fields.',
+	'LBL_SYNCED_PICKLIST_FIELDS' => 'Synced fields',
+	'LBL_NO_SYNC_PICKLISTS_SELECTED' => 'No synced picklist fields selected',
 	
 	//Translation for module
 	'Calendar' => 'Task',
@@ -56,7 +62,8 @@ $jsLanguageStrings = array(
 	'JS_LIST_UPDATED_SUCCESSFULLY' => 'List updated Successfully',
 	'JS_SEQUENCE_UPDATED_SUCCESSFULLY' => 'Sequence updated successfully',
 	'JS_VALUE_ASSIGNED_SUCCESSFULLY' => 'Value assigned successfully',
-    'JS_PLEASE_SELECT_MODULE' => 'Please select module',
+	'JS_PLEASE_SELECT_MODULE' => 'Please select module',
 	'JS_SPECIAL_CHARACTERS' => 'Special Characters like',
 	'JS_NOT_ALLOWED' => 'are not allowed',
+	'JS_PICKLIST_SYNC_SAVED_SUCCESSFULLY' => 'Picklist sync connections saved successfully',
 );	

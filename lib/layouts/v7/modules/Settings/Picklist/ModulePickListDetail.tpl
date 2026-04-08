@@ -26,7 +26,7 @@
             <div class="col-sm-3 col-xs-3 fieldValue">
                 <select class="select2 inputElement" id="modulePickList" name="modulePickList">
                     {foreach key=PICKLIST_FIELD item=FIELD_MODEL from=$PICKLIST_FIELDS}
-                        <option value="{$FIELD_MODEL->getId()}" {if $DEFAULT_FIELD eq $FIELD_MODEL->getName()} selected {/if}>{vtranslate($FIELD_MODEL->get('label'),$SELECTED_MODULE_NAME)}</option>
+                        <option value="{$FIELD_MODEL->getId()}" data-block="{if $FIELD_MODEL->get('block')}{$FIELD_MODEL->get('block')->id}{/if}" data-fieldname="{$FIELD_MODEL->getName()}" {if $DEFAULT_FIELD eq $FIELD_MODEL->getName()} selected {/if}>{vtranslate($FIELD_MODEL->get('label'),$SELECTED_MODULE_NAME)}</option>
                     {/foreach}
                 </select>
             </div>

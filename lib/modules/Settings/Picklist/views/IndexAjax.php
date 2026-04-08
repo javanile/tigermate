@@ -99,6 +99,8 @@ class Settings_Picklist_IndexAjax_View extends Settings_Vtiger_IndexAjax_View {
         $sourceModule = $request->get('source_module');
         $pickFieldId = $request->get('pickListFieldId');
         $fieldModel = Settings_Picklist_Field_Model::getInstance($pickFieldId);
+        $picklistModuleModel = new Settings_Picklist_Module_Model();
+        $picklistModuleModel->alignLinkedPicklistFields($fieldModel->getId());
 
 		$moduleName = $request->getModule();
         $qualifiedName = $request->getModule(false);
@@ -107,10 +109,13 @@ class Settings_Picklist_IndexAjax_View extends Settings_Vtiger_IndexAjax_View {
         $viewer = $this->getViewer($request);
         $viewer->assign('SELECTED_PICKLIST_FIELDMODEL',$fieldModel);
 		$viewer->assign('SELECTED_MODULE_NAME',$sourceModule);
-		$viewer->assign('MODULE',$moduleName);
+        $viewer->assign('MODULE',$moduleName);
 		$viewer->assign('QUALIFIED_MODULE',$qualifiedName);
         $viewer->assign('ROLES_LIST', Settings_Roles_Record_Model::getAll());
         $viewer->assign('SELECTED_PICKLISTFIELD_ALL_VALUES',$selectedFieldAllPickListValues);
+        $viewer->assign('PICKLIST_SYNC_CANDIDATES', Settings_Picklist_Module_Model::getPicklistSyncCandidates($fieldModel));
+        $viewer->assign('SELECTED_PICKLIST_SYNC_FIELDIDS', Settings_Picklist_Module_Model::getLinkedPicklistFieldIds($fieldModel->getId()));
+        $viewer->assign('SELECTED_PICKLIST_SYNC_FIELDS', Settings_Picklist_Module_Model::getLinkedPicklistFieldDetails($fieldModel->getId()));
         $viewer->view('PickListValueDetail.tpl',$qualifiedName);
     }
 

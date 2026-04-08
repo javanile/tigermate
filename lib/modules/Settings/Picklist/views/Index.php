@@ -39,6 +39,9 @@ class Settings_Picklist_Index_View extends Settings_Vtiger_Index_View {
             $viewer->assign('PICKLIST_FIELDS',$pickListFields);
             $viewer->assign('SELECTED_PICKLIST_FIELDMODEL',$selectedPickListFieldModel);
             $viewer->assign('SELECTED_PICKLISTFIELD_ALL_VALUES',$selectedFieldAllPickListValues);
+            $viewer->assign('PICKLIST_SYNC_CANDIDATES', Settings_Picklist_Module_Model::getPicklistSyncCandidates($selectedPickListFieldModel));
+            $viewer->assign('SELECTED_PICKLIST_SYNC_FIELDIDS', Settings_Picklist_Module_Model::getLinkedPicklistFieldIds($selectedPickListFieldModel->getId()));
+            $viewer->assign('SELECTED_PICKLIST_SYNC_FIELDS', Settings_Picklist_Module_Model::getLinkedPicklistFieldDetails($selectedPickListFieldModel->getId()));
             $viewer->assign('ROLES_LIST', Settings_Roles_Record_Model::getAll());
         }else{
             $viewer->assign('NO_PICKLIST_FIELDS',true);

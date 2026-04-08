@@ -8,19 +8,21 @@
 class SmartyCompilerException extends SmartyException
 {
     /**
+     * Template line number for compiler errors.
+     *
+     * Kept separate from Exception::$line for PHP 8+ compatibility.
+     *
+     * @var int|null
+     */
+    public $smartyLine = 0;
+
+    /**
      * @return string
      */
     public function __toString()
     {
         return ' --> Smarty Compiler: ' . $this->message . ' <-- ';
     }
-
-    /**
-     * The line number of the template error
-     *
-     * @type int|null
-     */
-    public int $line = 0;
 
     /**
      * The template source snippet relating to the error

@@ -23,9 +23,10 @@
     {assign var=NON_DELETABLE_VALUES value=$SELECTED_PICKLIST_FIELDMODEL->getNonEditablePicklistValues($SELECTED_PICKLIST_FIELDMODEL->getName())}
     <ul class="nav nav-tabs massEditTabs" style="margin-bottom: 0;">
         <li class="active"><a href="#allValuesLayout" data-toggle="tab"><strong>{vtranslate('LBL_ALL_VALUES',$QUALIFIED_MODULE)}</strong></a></li>
-                    {if $SELECTED_PICKLIST_FIELDMODEL->isRoleBased()}
+        {if $SELECTED_PICKLIST_FIELDMODEL->isRoleBased()}
             <li id="assignedToRoleTab"><a href="#AssignedToRoleLayout" data-toggle="tab"><strong>{vtranslate('LBL_VALUES_ASSIGNED_TO_A_ROLE',$QUALIFIED_MODULE)}</strong></a></li>
-                    {/if}
+        {/if}
+        <li id="picklistSyncTab"><a href="#picklistSyncLayout" data-toggle="tab"><strong>{vtranslate('LBL_SYNC_WITH_PICKLISTS',$QUALIFIED_MODULE)}</strong></a></li>
     </ul>
     <div class="tab-content layoutContent padding20 themeTableColor overflowVisible">
         <br>
@@ -93,5 +94,73 @@
                 </div>
             </div>
         {/if}
+        <div class="tab-pane form-horizontal row" id="picklistSyncLayout">
+            <div class="col-lg-2 col-md-2 col-sm-2"></div>
+            <div class="col-lg-8 col-md-8 col-sm-8">
+                <div class="well">
+                    <div class="row form-group">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-3">{vtranslate('LBL_SYNC_WITH_PICKLISTS',$QUALIFIED_MODULE)}</label>
+                        <div class="controls col-lg-9 col-md-9 col-sm-9">
+                            <input type="hidden" id="picklistSyncSourceFieldId" value="{$SELECTED_PICKLIST_FIELDMODEL->getId()}" />
+                            <input type="hidden" id="picklistSyncCandidates" value='{ZEND_JSON::encode($PICKLIST_SYNC_CANDIDATES)|escape}' />
+                            <div class="row">
+                                <div class="col-lg-5 col-md-5 col-sm-5">
+                                    <label>{vtranslate('LBL_SELECT_MODULE',$QUALIFIED_MODULE)}</label>
+                                    <select id="picklistSyncModule" class="select2 inputElement">
+                                        <option value="">{vtranslate('LBL_SELECT_OPTION',$QUALIFIED_MODULE)}</option>
+                                        {foreach key=SYNC_MODULE_NAME item=SYNC_FIELDS from=$PICKLIST_SYNC_CANDIDATES}
+                                            <option value="{$SYNC_MODULE_NAME}">{vtranslate($SYNC_MODULE_NAME,$SYNC_MODULE_NAME)}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                                <div class="col-lg-5 col-md-5 col-sm-5">
+                                    <label>{vtranslate('LBL_SELECT_PICKLIST_IN',$QUALIFIED_MODULE)} {vtranslate('LBL_SELECT_MODULE',$QUALIFIED_MODULE)}</label>
+                                    <select id="picklistSyncField" class="select2 inputElement">
+                                        <option value="">{vtranslate('LBL_SELECT_OPTION',$QUALIFIED_MODULE)}</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <label>&nbsp;</label>
+                                    <button class="btn btn-default btn-block" id="addPicklistSyncField" type="button">
+                                        <i class="fa fa-plus"></i>&nbsp;{vtranslate('LBL_ADD',$QUALIFIED_MODULE)}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="marginTop10">
+                                <table class="table table-bordered" id="picklistSyncList">
+                                    <thead>
+                                        <tr class="listViewHeaders bgColor">
+                                            <th>{vtranslate('LBL_SYNCED_PICKLIST_FIELDS',$QUALIFIED_MODULE)}</th>
+                                            <th style="width: 60px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {foreach item=SYNC_FIELD from=$SELECTED_PICKLIST_SYNC_FIELDS}
+                                            <tr class="picklistSyncRow" data-field-id="{$SYNC_FIELD.fieldid}" data-module-name="{$SYNC_FIELD.module}" data-field-label="{vtranslate($SYNC_FIELD.fieldlabel,$SYNC_FIELD.module)}">
+                                                <td>{vtranslate($SYNC_FIELD.module,$SYNC_FIELD.module)} / {vtranslate($SYNC_FIELD.fieldlabel,$SYNC_FIELD.module)}</td>
+                                                <td class="text-center">
+                                                    <a href="javascript:void(0)" class="removePicklistSyncField" title="{vtranslate('LBL_DELETE_VALUE',$QUALIFIED_MODULE)}"><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+                                        <tr class="picklistSyncEmptyRow {if $SELECTED_PICKLIST_SYNC_FIELDS|@count gt 0}hide{/if}">
+                                            <td colspan="2" class="textMuted">{vtranslate('LBL_NO_SYNC_PICKLISTS_SELECTED',$QUALIFIED_MODULE)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="marginTop10">
+                                <button class="btn btn-success" id="savePicklistSync" type="button">
+                                    <strong>{vtranslate('LBL_SAVE_SYNC_CONNECTIONS',$QUALIFIED_MODULE)}</strong>
+                                </button>
+                            </div>
+                            <div class="alert alert-info marginTop10">
+                                {vtranslate('LBL_PICKLIST_SYNC_INFO',$QUALIFIED_MODULE)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>	
 {/strip}

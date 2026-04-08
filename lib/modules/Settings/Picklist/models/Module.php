@@ -10,6 +10,8 @@
 
 class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 
+	const PICKLIST_SYNC_MARKER = 'PICKLIST_SYNC';
+
 	public function getPickListTableName($fieldName) {
 		return 'vtiger_'.$fieldName;
 	}
@@ -376,10 +378,13 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 
 		$allLang = Vtiger_Language_Handler::getAllLanguages();
 		foreach ($allLang as $langKey => $langName) {
-			$langDir = 'languages/' . $langKey . '/custom/';
-			if (!file_exists($langDir)) {
-				mkdir($langDir);
-				mkdir($langDir . '/Settings');
+			$languageBaseDir = rtrim(vglobal('root_directory'), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'languages' . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR;
+			if (empty($languageBaseDir) || !is_dir(dirname($languageBaseDir))) {
+				$languageBaseDir = dirname(__FILE__, 4) . DIRECTORY_SEPARATOR . 'languages' . DIRECTORY_SEPARATOR . 'custom' . DIRECTORY_SEPARATOR;
+			}
+			$langDir = $languageBaseDir . $langKey . DIRECTORY_SEPARATOR;
+			if (!is_dir($langDir) && !@mkdir($langDir, 0777, true) && !is_dir($langDir)) {
+				continue;
 			}
 			$fileName = $langDir . $moduleName . '.php';
 			if (file_exists($fileName)) {
@@ -410,6 +415,9 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 
 			//Write file
 			$fp = fopen($fileName, "w");
+			if ($fp === false) {
+				continue;
+			}
 			if ($languageStrings) {
 				fwrite($fp, "<?php\n\$languageStrings = array(\n");
 				foreach ($languageStrings as $key => $value) {
@@ -575,6 +583,401 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 		}
 
 		return true;
+	}
+
+	public static function getPicklistSyncCandidates(Settings_Picklist_Field_Model $sourceFieldModel) {
+		$db = PearDatabase::getInstance();
+		$sourceFieldId = (int) $sourceFieldModel->getId();
+		$sourceUiType = (int) $sourceFieldModel->get('uitype');
+		$candidates = array();
+
+		if (in_array($sourceUiType, array(15, 16), true)) {
+			$uiTypes = array(15, 16);
+		} elseif ($sourceUiType === 33) {
+			$uiTypes = array(33);
+		} else {
+			$uiTypes = array($sourceUiType);
+		}
+
+		$query = 'SELECT vtiger_field.fieldid, vtiger_field.fieldname, vtiger_field.fieldlabel, vtiger_tab.name as module
+			FROM vtiger_field
+			INNER JOIN vtiger_tab ON vtiger_tab.tabid = vtiger_field.tabid
+			WHERE vtiger_field.uitype IN ('.generateQuestionMarks($uiTypes).')
+				AND vtiger_field.presence IN (0,2)
+				AND vtiger_field.displaytype = 1
+				AND vtiger_tab.presence != 1
+				AND vtiger_field.fieldid != ?
+				AND vtiger_tab.name NOT IN (?, ?)
+			ORDER BY vtiger_tab.tabid ASC, vtiger_field.sequence ASC';
+
+		$params = $uiTypes;
+		$params[] = $sourceFieldId;
+		$params[] = 'Users';
+		$params[] = 'Emails';
+		$result = $db->pquery($query, $params);
+
+		for ($i = 0; $i < $db->num_rows($result); $i++) {
+			$moduleName = $db->query_result($result, $i, 'module');
+			$candidates[$moduleName][] = array(
+				'fieldid' => (int) $db->query_result($result, $i, 'fieldid'),
+				'fieldname' => $db->query_result($result, $i, 'fieldname'),
+				'fieldlabel' => $db->query_result($result, $i, 'fieldlabel'),
+				'module' => $moduleName,
+			);
+		}
+
+		return $candidates;
+	}
+
+	public static function getLinkedPicklistFieldIds($fieldId) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery('SELECT helpinfo FROM vtiger_field WHERE fieldid = ?', array((int) $fieldId));
+		if (!$db->num_rows($result)) {
+			return array();
+		}
+
+		$helpinfo = (string) $db->query_result($result, 0, 'helpinfo');
+		$metadata = self::extractPicklistSyncMetadata($helpinfo);
+		if (empty($metadata['linkedFieldIds']) || !is_array($metadata['linkedFieldIds'])) {
+			return array();
+		}
+
+		$linkedFieldIds = array_map('intval', $metadata['linkedFieldIds']);
+		$linkedFieldIds = array_values(array_unique(array_filter($linkedFieldIds)));
+		sort($linkedFieldIds);
+		return $linkedFieldIds;
+	}
+
+	public static function getLinkedPicklistFieldDetails($fieldId) {
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($fieldId);
+		if (empty($linkedFieldIds)) {
+			return array();
+		}
+
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT vtiger_field.fieldid, vtiger_field.fieldname, vtiger_field.fieldlabel, vtiger_tab.name as module
+			 FROM vtiger_field
+			 INNER JOIN vtiger_tab ON vtiger_tab.tabid = vtiger_field.tabid
+			 WHERE vtiger_field.fieldid IN ('.generateQuestionMarks($linkedFieldIds).')
+			 ORDER BY vtiger_tab.name, vtiger_field.sequence',
+			$linkedFieldIds
+		);
+
+		$details = array();
+		for ($i = 0; $i < $db->num_rows($result); $i++) {
+			$details[] = array(
+				'fieldid' => (int) $db->query_result($result, $i, 'fieldid'),
+				'fieldname' => $db->query_result($result, $i, 'fieldname'),
+				'fieldlabel' => $db->query_result($result, $i, 'fieldlabel'),
+				'module' => $db->query_result($result, $i, 'module'),
+			);
+		}
+
+		return $details;
+	}
+
+	public function savePicklistSyncLinks($fieldId, $linkedFieldIds) {
+		$fieldId = (int) $fieldId;
+		$linkedFieldIds = array_map('intval', (array) $linkedFieldIds);
+		$linkedFieldIds = array_values(array_unique(array_filter($linkedFieldIds)));
+		$linkedFieldIds = array_values(array_diff($linkedFieldIds, array($fieldId)));
+
+		$existingLinkedFieldIds = self::getLinkedPicklistFieldIds($fieldId);
+		$affectedFieldIds = array_values(array_unique(array_merge(array($fieldId), $existingLinkedFieldIds, $linkedFieldIds)));
+		$syncGroupFieldIds = array_values(array_unique(array_merge(array($fieldId), $linkedFieldIds)));
+
+		foreach ($affectedFieldIds as $affectedFieldId) {
+			if (in_array($affectedFieldId, $syncGroupFieldIds)) {
+				$this->updatePicklistSyncMetadata($affectedFieldId, array_values(array_diff($syncGroupFieldIds, array($affectedFieldId))));
+			} else {
+				$this->updatePicklistSyncMetadata($affectedFieldId, array());
+			}
+		}
+	}
+
+	public function alignLinkedPicklistFields($sourceFieldId) {
+		$sourceFieldId = (int) $sourceFieldId;
+		$sourceFieldModel = Settings_Picklist_Field_Model::getInstance($sourceFieldId);
+		if (!$sourceFieldModel) {
+			return;
+		}
+
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($sourceFieldId);
+		if (empty($linkedFieldIds)) {
+			return;
+		}
+
+		$sourceFieldName = $sourceFieldModel->getName();
+		$sourceModuleName = self::getModuleNameByFieldId($sourceFieldId);
+		$sourceEntries = $this->getOrderedPicklistEntries($sourceFieldName);
+
+		foreach ($linkedFieldIds as $linkedFieldId) {
+			$targetFieldModel = Settings_Picklist_Field_Model::getInstance($linkedFieldId);
+			if (!$targetFieldModel) {
+				continue;
+			}
+
+			$targetFieldName = $targetFieldModel->getName();
+			$targetModuleName = self::getModuleNameByFieldId($linkedFieldId);
+			$targetEntries = $this->getPicklistEntriesByValue($targetFieldName);
+			$targetSequence = array();
+			$position = 1;
+			$addedValues = array();
+
+			foreach ($sourceEntries as $sourceEntry) {
+				$value = $sourceEntry['value'];
+				if (!isset($targetEntries[$value])) {
+					$this->addPickListValues($targetFieldModel, $value, array(), $sourceEntry['color']);
+					$addedValues[] = $value;
+					$targetEntries = $this->getPicklistEntriesByValue($targetFieldName);
+				}
+
+				if (isset($targetEntries[$value])) {
+					$targetEntry = $targetEntries[$value];
+					$targetSequence[$targetEntry['id']] = $position++;
+					if (!empty($sourceEntry['color'])) {
+						$this->updatePicklistColor($targetFieldName, $targetEntry['id'], $sourceEntry['color']);
+					}
+				}
+			}
+
+			if (!empty($addedValues)) {
+				$this->handleLabels($targetModuleName, $addedValues, array(), 'add');
+			}
+			if (!empty($targetSequence)) {
+				$this->updateSequence($targetFieldName, $targetSequence);
+			}
+		}
+	}
+
+	public function syncAddedValues($sourceFieldId, $newValues, $rolesSelected = array(), $color = '') {
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($sourceFieldId);
+		if (empty($linkedFieldIds)) {
+			return;
+		}
+
+		$newValues = array_map('trim', (array) $newValues);
+		$newValues = array_values(array_filter($newValues, 'strlen'));
+		if (empty($newValues)) {
+			return;
+		}
+
+		foreach ($linkedFieldIds as $linkedFieldId) {
+			$targetFieldModel = Settings_Picklist_Field_Model::getInstance($linkedFieldId);
+			if (!$targetFieldModel) {
+				continue;
+			}
+
+			$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
+			$addedValues = array();
+			foreach ($newValues as $newValue) {
+				if (isset($targetEntries[$newValue])) {
+					continue;
+				}
+				$this->addPickListValues($targetFieldModel, $newValue, $rolesSelected, $color);
+				$addedValues[] = $newValue;
+			}
+			if (!empty($addedValues)) {
+				$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), $addedValues, array(), 'add');
+			}
+		}
+	}
+
+	public function syncRenamedValue($sourceFieldId, $oldValue, $newValue, $color = '') {
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($sourceFieldId);
+		if (empty($linkedFieldIds)) {
+			return;
+		}
+
+		foreach ($linkedFieldIds as $linkedFieldId) {
+			$targetFieldModel = Settings_Picklist_Field_Model::getInstance($linkedFieldId);
+			if (!$targetFieldModel) {
+				continue;
+			}
+
+			$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
+			$lookupValue = ($oldValue === $newValue) ? $newValue : $oldValue;
+			if (!isset($targetEntries[$lookupValue])) {
+				continue;
+			}
+
+			$targetEntryId = $targetEntries[$lookupValue]['id'];
+			if ($oldValue !== $newValue) {
+				$this->renamePickListValues($targetFieldModel->getName(), $oldValue, $newValue, self::getModuleNameByFieldId($linkedFieldId), $targetEntryId, false, $color);
+				$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), $newValue, $oldValue, 'rename');
+			} elseif (!empty($color)) {
+				$this->updatePicklistColor($targetFieldModel->getName(), $targetEntryId, $color);
+			}
+		}
+	}
+
+	public function syncRemovedValues($sourceFieldId, $deletedValues, $replaceValue) {
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($sourceFieldId);
+		if (empty($linkedFieldIds) || empty($deletedValues) || empty($replaceValue)) {
+			return;
+		}
+
+		$sourceFieldModel = Settings_Picklist_Field_Model::getInstance($sourceFieldId);
+		$replaceColor = self::getPicklistColorByValue($sourceFieldModel->getName(), $replaceValue);
+
+		foreach ($linkedFieldIds as $linkedFieldId) {
+			$targetFieldModel = Settings_Picklist_Field_Model::getInstance($linkedFieldId);
+			if (!$targetFieldModel) {
+				continue;
+			}
+
+			$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
+			$deleteIds = array();
+			foreach ((array) $deletedValues as $deletedValue) {
+				if (isset($targetEntries[$deletedValue])) {
+					$deleteIds[] = $targetEntries[$deletedValue]['id'];
+				}
+			}
+
+			if (empty($deleteIds)) {
+				continue;
+			}
+
+			if (!isset($targetEntries[$replaceValue])) {
+				$this->addPickListValues($targetFieldModel, $replaceValue, array(), $replaceColor);
+				$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), array($replaceValue), array(), 'add');
+				$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
+			}
+
+			if (!isset($targetEntries[$replaceValue])) {
+				continue;
+			}
+
+			$this->remove($targetFieldModel->getName(), $deleteIds, array($targetEntries[$replaceValue]['id']), self::getModuleNameByFieldId($linkedFieldId));
+			$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), array(), $deletedValues, 'delete');
+		}
+	}
+
+	public function syncSequence($sourceFieldId, $sourceSequence) {
+		$linkedFieldIds = self::getLinkedPicklistFieldIds($sourceFieldId);
+		if (empty($linkedFieldIds) || empty($sourceSequence)) {
+			return;
+		}
+
+		$sourceFieldModel = Settings_Picklist_Field_Model::getInstance($sourceFieldId);
+		$sourceEntriesById = $this->getPicklistEntriesById($sourceFieldModel->getName());
+		$orderedValues = array();
+		foreach ((array) $sourceSequence as $sourceEntryId => $sequence) {
+			if (isset($sourceEntriesById[$sourceEntryId])) {
+				$orderedValues[(int) $sequence] = $sourceEntriesById[$sourceEntryId]['value'];
+			}
+		}
+		ksort($orderedValues);
+
+		foreach ($linkedFieldIds as $linkedFieldId) {
+			$targetFieldModel = Settings_Picklist_Field_Model::getInstance($linkedFieldId);
+			if (!$targetFieldModel) {
+				continue;
+			}
+
+			$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
+			$targetSequence = array();
+			$position = 1;
+			foreach ($orderedValues as $value) {
+				if (isset($targetEntries[$value])) {
+					$targetSequence[$targetEntries[$value]['id']] = $position++;
+				}
+			}
+
+			if (!empty($targetSequence)) {
+				$this->updateSequence($targetFieldModel->getName(), $targetSequence);
+			}
+		}
+	}
+
+	protected static function extractPicklistSyncMetadata($helpinfo) {
+		$metadata = array();
+		$decodedHelpinfo = html_entity_decode(html_entity_decode((string) $helpinfo, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+		if (preg_match_all('/<!--\s*'.self::PICKLIST_SYNC_MARKER.'\s*(\{.*?\})\s*-->/s', $decodedHelpinfo, $matches) && !empty($matches[1])) {
+			$rawMetadata = end($matches[1]);
+			$metadata = Zend_Json::decode($rawMetadata);
+			if (!is_array($metadata)) {
+				$metadata = array();
+			}
+		}
+		return $metadata;
+	}
+
+	protected static function stripPicklistSyncMetadata($helpinfo) {
+		$patterns = array(
+			'/\s*<!--\s*'.self::PICKLIST_SYNC_MARKER.'\s*\{.*?\}\s*-->\s*/s',
+			'/\s*&lt;!--\s*'.self::PICKLIST_SYNC_MARKER.'\s*\{.*?\}\s*--&gt;\s*/s',
+			'/\s*&amp;lt;!--\s*'.self::PICKLIST_SYNC_MARKER.'\s*\{.*?\}\s*--&amp;gt;\s*/s',
+		);
+		return trim((string) preg_replace($patterns, '', (string) $helpinfo));
+	}
+
+	protected function updatePicklistSyncMetadata($fieldId, $linkedFieldIds) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery('SELECT helpinfo FROM vtiger_field WHERE fieldid = ?', array((int) $fieldId));
+		$currentHelpinfo = $db->num_rows($result) ? (string) $db->query_result($result, 0, 'helpinfo') : '';
+		$baseHelpinfo = self::stripPicklistSyncMetadata($currentHelpinfo);
+
+		$linkedFieldIds = array_map('intval', (array) $linkedFieldIds);
+		$linkedFieldIds = array_values(array_unique(array_filter($linkedFieldIds)));
+		sort($linkedFieldIds);
+
+		$updatedHelpinfo = $baseHelpinfo;
+		if (!empty($linkedFieldIds)) {
+			$metadata = Zend_Json::encode(array('linkedFieldIds' => $linkedFieldIds));
+			$updatedHelpinfo = trim($baseHelpinfo . "\n<!-- " . self::PICKLIST_SYNC_MARKER . ' ' . $metadata . " -->");
+		}
+
+		$db->pquery('UPDATE vtiger_field SET helpinfo = ? WHERE fieldid = ?', array($updatedHelpinfo, (int) $fieldId));
+	}
+
+	protected static function getModuleNameByFieldId($fieldId) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT vtiger_tab.name FROM vtiger_field INNER JOIN vtiger_tab ON vtiger_tab.tabid = vtiger_field.tabid WHERE vtiger_field.fieldid = ?',
+			array((int) $fieldId)
+		);
+		if ($db->num_rows($result)) {
+			return $db->query_result($result, 0, 'name');
+		}
+		return '';
+	}
+
+	protected function getOrderedPicklistEntries($fieldName) {
+		$db = PearDatabase::getInstance();
+		$primaryKey = Vtiger_Util_Helper::getPickListId($fieldName);
+		$columns = $db->getColumnNames('vtiger_'.$fieldName);
+		$selectColumns = array($primaryKey, $fieldName, 'sortorderid');
+		if (in_array('color', $columns)) {
+			$selectColumns[] = 'color';
+		}
+		$result = $db->pquery('SELECT '.implode(',', $selectColumns).' FROM vtiger_'.$fieldName.' ORDER BY sortorderid', array());
+		$entries = array();
+		for ($i = 0; $i < $db->num_rows($result); $i++) {
+			$entries[] = array(
+				'id' => $db->query_result($result, $i, $primaryKey),
+				'value' => decode_html($db->query_result($result, $i, $fieldName)),
+				'color' => in_array('color', $columns) ? $db->query_result($result, $i, 'color') : '',
+			);
+		}
+		return $entries;
+	}
+
+	protected function getPicklistEntriesByValue($fieldName) {
+		$entries = array();
+		foreach ($this->getOrderedPicklistEntries($fieldName) as $entry) {
+			$entries[$entry['value']] = $entry;
+		}
+		return $entries;
+	}
+
+	protected function getPicklistEntriesById($fieldName) {
+		$entries = array();
+		foreach ($this->getOrderedPicklistEntries($fieldName) as $entry) {
+			$entries[$entry['id']] = $entry;
+		}
+		return $entries;
 	}
 
 }
