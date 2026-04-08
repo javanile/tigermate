@@ -51,6 +51,8 @@
                             <div class="col-sm-4 controls">
                                 <select class='select2' id='schtypeid' name='schtypeid' style="min-width: 150px;">
                                     <option value="1" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 1}selected{/if}>{vtranslate('LBL_HOURLY', $QUALIFIED_MODULE)}</option>
+                                    <option value="8" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 8}selected{/if}>{vtranslate('LBL_EVERY_MINUTE', $QUALIFIED_MODULE)}</option>
+                                    <option value="9" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 9}selected{/if}>{vtranslate('LBL_EVERY_N_MINUTES', $QUALIFIED_MODULE)}</option>
                                     <option value="2" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 2}selected{/if}>{vtranslate('LBL_DAILY', $QUALIFIED_MODULE)}</option>
                                     <option value="3" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 3}selected{/if}>{vtranslate('LBL_WEEKLY', $QUALIFIED_MODULE)}</option>
                                     <option value="4" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 4}selected{/if}>{vtranslate('LBL_SPECIFIC_DATE', $QUALIFIED_MODULE)}</option>
@@ -58,6 +60,21 @@
                                     <!--option value="6" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 6}selected{/if}>{vtranslate('LBL_MONTHLY_BY_WEEKDAY', $QUALIFIED_MODULE)}</option-->
                                     <option value="7" {if $WORKFLOW_MODEL_OBJ->schtypeid eq 7}selected{/if}>{vtranslate('LBL_YEARLY', $QUALIFIED_MODULE)}</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        {assign var=MINUTE_INTERVAL_VALUE value=1}
+                        {if $WORKFLOW_MODEL_OBJ->schtypeid eq 9 && $WORKFLOW_MODEL_OBJ->schdayofmonth}
+                            {assign var=MINUTE_INTERVAL_DATA value=Zend_Json::decode($WORKFLOW_MODEL_OBJ->schdayofmonth)}
+                            {if is_array($MINUTE_INTERVAL_DATA) && $MINUTE_INTERVAL_DATA[0] gt 0}
+                                {assign var=MINUTE_INTERVAL_VALUE value=$MINUTE_INTERVAL_DATA[0]}
+                            {/if}
+                        {/if}
+
+                        <div class='form-group {if $WORKFLOW_MODEL_OBJ->schtypeid neq 9} hide {/if}' id='scheduledMinuteInterval'>
+                            <label class='col-sm-2 control-label'>{vtranslate('LBL_MINUTE_INTERVAL', $QUALIFIED_MODULE)} <span class="redColor">*</span></label>
+                            <div class='col-sm-2 controls'>
+                                <input type="number" min="1" step="1" class="inputElement" id="schminuteinterval" name="schminuteinterval" value="{$MINUTE_INTERVAL_VALUE}" />
                             </div>
                         </div>
 
@@ -127,7 +144,7 @@
                         </div>
 
                         {* show time for all other than Hourly option*}
-                        <div class="form-group {if $WORKFLOW_MODEL_OBJ->schtypeid < 2} hide {/if}" id='scheduledTime' style='padding:5px 0px 10px 0px;'>
+                        <div class="form-group {if $WORKFLOW_MODEL_OBJ->schtypeid eq 1 || $WORKFLOW_MODEL_OBJ->schtypeid eq 8 || $WORKFLOW_MODEL_OBJ->schtypeid eq 9} hide {/if}" id='scheduledTime' style='padding:5px 0px 10px 0px;'>
                               <label for="schtime" class="col-sm-2 control-label">
                                  {vtranslate('LBL_AT_TIME', $QUALIFIED_MODULE)} <span class="redColor">*</span>
                               </label>

@@ -348,6 +348,8 @@ class Workflow{
 	static $SCHEDULED_MONTHLY_BY_DATE = 5;
 	static $SCHEDULED_MONTHLY_BY_WEEKDAY = 6;
 	static $SCHEDULED_ANNUALLY = 7;
+	static $SCHEDULED_EVERY_MINUTE = 8;
+	static $SCHEDULED_EVERY_N_MINUTES = 9;
 
 	function __construct(){
 		$this->conditionStrategy = new VTJsonCondition();
@@ -484,6 +486,21 @@ class Workflow{
 		return $this->schdayofmonth;
 	}
 
+	function getWFScheduleMinuteInterval() {
+		$scheduledDay = $this->getWFScheduleDay();
+		if (empty($scheduledDay)) {
+			return 1;
+		}
+
+		$decodedValue = Zend_Json::decode($scheduledDay);
+		if (is_array($decodedValue)) {
+			$decodedValue = reset($decodedValue);
+		}
+
+		$decodedValue = intval($decodedValue);
+		return ($decodedValue > 0) ? $decodedValue : 1;
+	}
+
 	function getWFScheduleWeek(){
 		return $this->schdayofweek;
 	}
@@ -508,6 +525,14 @@ class Workflow{
 
 		if($scheduleType == Workflow::$SCHEDULED_HOURLY) {
 			$nextTime = date("Y-m-d H:i:s",strtotime("+1 hour"));
+		}
+
+		if($scheduleType == Workflow::$SCHEDULED_EVERY_MINUTE) {
+			$nextTime = date("Y-m-d H:i:s", strtotime("+1 minute"));
+		}
+
+		if($scheduleType == Workflow::$SCHEDULED_EVERY_N_MINUTES) {
+			$nextTime = date("Y-m-d H:i:s", strtotime("+".$this->getWFScheduleMinuteInterval()." minutes"));
 		}
 
 		if($scheduleType == Workflow::$SCHEDULED_DAILY) {

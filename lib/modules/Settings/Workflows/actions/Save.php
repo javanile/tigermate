@@ -69,6 +69,12 @@ class Settings_Workflows_Save_Action extends Settings_Vtiger_Basic_Action {
 				$dayOfWeek = Zend_Json::encode($request->get('schdayofweek'));
 			} else if($workflowScheduleType == Workflow::$SCHEDULED_MONTHLY_BY_DATE) {
 				$dayOfMonth = Zend_Json::encode($request->get('schdayofmonth'));
+			} else if($workflowScheduleType == Workflow::$SCHEDULED_EVERY_N_MINUTES) {
+				$minuteInterval = intval($request->get('schminuteinterval'));
+				if($minuteInterval < 1) {
+					$minuteInterval = 1;
+				}
+				$dayOfMonth = Zend_Json::encode(array($minuteInterval));
 			} else if($workflowScheduleType == Workflow::$SCHEDULED_ON_SPECIFIC_DATE) {
 				$date = $request->get('schdate');
 				$dateDBFormat = DateTimeField::convertToDBFormat($date);
