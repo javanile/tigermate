@@ -159,6 +159,19 @@ class Vtiger_Language_Handler {
         if (file_exists($file)) {
             require $file;
 
+            if (!isset(self::$languageContainer[$language][$module]['languageStrings']) || !is_array(self::$languageContainer[$language][$module]['languageStrings'])) {
+                self::$languageContainer[$language][$module]['languageStrings'] = array();
+            }
+            if (!isset(self::$languageContainer[$language][$module]['jsLanguageStrings']) || !is_array(self::$languageContainer[$language][$module]['jsLanguageStrings'])) {
+                self::$languageContainer[$language][$module]['jsLanguageStrings'] = array();
+            }
+            if (!is_array($languageStrings)) {
+                $languageStrings = array();
+            }
+            if (!is_array($jsLanguageStrings)) {
+                $jsLanguageStrings = array();
+            }
+
             self::$languageContainer[$language][$module]['languageStrings'] = array_merge(
                 self::$languageContainer[$language][$module]['languageStrings'],
                 $languageStrings
