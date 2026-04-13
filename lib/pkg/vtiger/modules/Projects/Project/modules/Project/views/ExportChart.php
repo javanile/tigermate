@@ -44,8 +44,10 @@ class Project_ExportChart_View extends Vtiger_Index_View {
 		$projectTasks = array();
 		$moduleName = $request->getModule();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		$displayMode = Settings_Vtiger_GanttConfig_Model::getDisplayMode();
 		$parentRecordModel = Vtiger_Record_Model::getInstanceById($parentId, $moduleName);
-		$projectTasks['tasks'] = $parentRecordModel->getProjectTasks();
+		$projectTasks['tasks'] = $parentRecordModel->getGanttChartItems($displayMode);
+		$projectTasks['ganttBarHeight'] = Settings_Vtiger_GanttConfig_Model::getBarHeight();
 		$projectTasks["selectedRow"] = 0;
 		$projectTasks["canWrite"] = true;
 		$projectTasks["canWriteOnParent"] = true;
@@ -55,6 +57,7 @@ class Project_ExportChart_View extends Vtiger_Index_View {
 		$viewer->assign('PROJECT_TASKS', $projectTasks);
 		$viewer->assign('TASK_STATUS_COLOR', $parentRecordModel->getStatusColors());
 		$viewer->assign('USER_DATE_FORMAT', $currentUserModel->get('date_format'));
+		$viewer->assign('GANTT_DISPLAY_MODE', $displayMode);
 		$viewer->view('ShowChartPrintView.tpl', $moduleName);
 	}
 }

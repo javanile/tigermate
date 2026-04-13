@@ -198,6 +198,7 @@
   border-radius:2px;
   background: #eee; /* Old browsers */
   border:1px solid #bbb;
+  overflow:hidden;
 }
 
 .taskBoxDiv .taskStatus {
@@ -230,6 +231,45 @@
 .taskBoxDiv .taskProgress{
   height:5px;
   position:absolute;
+  top:10px;
+}
+
+.taskBoxDiv.hasCustomProgress .taskStatus,
+.taskBoxDiv.hasCustomProgress .taskProgress{
+  display:none;
+}
+
+.taskBoxDiv .ganttCustomProgressBars{
+  position:absolute;
+  left:6px;
+  right:6px;
+  top:6px;
+  bottom:6px;
+  display:none;
+  pointer-events:none;
+}
+
+.taskBoxDiv .ganttCustomProgressBars.active{
+  display:block;
+}
+
+.taskBoxDiv .ganttCustomProgressBar{
+  border-radius:4px;
+  background:rgba(255,255,255,0.75);
+}
+
+.taskBoxDiv .ganttCustomProgressBars.double .ganttCustomProgressBar{
+  height:calc(50% - 2px);
+  margin-bottom:4px;
+}
+
+.taskBoxDiv .ganttCustomProgressBars.double .ganttCustomProgressBar:last-child{
+  margin-bottom:0;
+  background:rgba(54,73,82,0.82);
+}
+
+.taskBoxDiv .ganttCustomProgressBars.single .ganttCustomProgressBar{
+  height:100%;
 }
 
 .taskBoxDiv .layout.extDep{
@@ -259,6 +299,41 @@
 
 .taskEditRow,.emptyRow {
   height:30px;
+}
+
+.gantt-bar-height-small .taskBoxDiv{
+  height:20px;
+}
+
+.gantt-bar-height-small .taskEditRow,
+.gantt-bar-height-small .emptyRow{
+  height:26px;
+}
+
+.gantt-bar-height-small .taskLabel{
+  height:22px;
+}
+
+.gantt-bar-height-small .taskBoxDiv .taskProgress{
+  top:8px;
+}
+
+.gantt-bar-height-large .taskBoxDiv{
+  height:40px;
+}
+
+.gantt-bar-height-large .taskEditRow,
+.gantt-bar-height-large .emptyRow{
+  height:48px;
+}
+
+.gantt-bar-height-large .taskLabel{
+  height:42px;
+  line-height:40px;
+}
+
+.gantt-bar-height-large .taskBoxDiv .taskProgress{
+  top:17px;
 }
 
 .taskEditRow input{
@@ -360,6 +435,18 @@ input[readonly]{
   stroke-width:1px;
   stroke:#bbb;
   /*fill:url('#taskGrad'); do not work on firefox*/
+}
+
+.taskBoxSVG.hasCustomProgress .taskStatusSVG{
+  display:none;
+}
+
+.ganttCustomProgressPrimarySVG{
+  fill:rgba(255,255,255,0.78);
+}
+
+.ganttCustomProgressSecondarySVG{
+  fill:rgba(54,73,82,0.82);
 }
 
 .taskLinkPathSVG{

@@ -115,12 +115,11 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$projectTasks = array();
 		$moduleName = $request->getModule();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		$displayMode = Settings_Vtiger_GanttConfig_Model::getDisplayMode();
 		$parentRecordModel = Vtiger_Record_Model::getInstanceById($parentId, $moduleName);
 		$projectTaskModel = Vtiger_Module_Model::getInstance('ProjectTask');
-		$projectTasks['tasks'] = array_merge(
-			$parentRecordModel->getProjectTasks(),
-			$parentRecordModel->getProjectMilestones()
-		);
+		$projectTasks['tasks'] = $parentRecordModel->getGanttChartItems($displayMode);
+		$projectTasks['ganttBarHeight'] = Settings_Vtiger_GanttConfig_Model::getBarHeight();
 		$projectTasks["selectedRow"] = 0;
 		$projectTasks["canWrite"] = true;
 		$projectTasks["canWriteOnParent"] = true;
@@ -134,6 +133,7 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$viewer->assign('STYLES',$this->getHeaderCss($request));
 		$viewer->assign('USER_DATE_FORMAT', $currentUserModel->get('date_format'));
 		$viewer->assign('STATUS_FIELD_MODEL', Vtiger_Field_Model::getInstance('projecttaskstatus', $projectTaskModel));
+		$viewer->assign('GANTT_DISPLAY_MODE', $displayMode);
 
 		return $viewer->view('ShowChart.tpl', $moduleName, 'true');
 	}

@@ -92,10 +92,16 @@
         --></div>
 
         <div class="__template__" type="TASKBAR"><!--
-        <div class="taskBox taskBoxDiv" taskId="(#=obj.id#)" >
+        <div class="taskBox taskBoxDiv (#=obj.ganttUsesCustomProgress?'hasCustomProgress':''#)" taskId="(#=obj.id#)" >
           <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
             <div class="taskStatus" status="(#=obj.status#)"></div>
             <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%; background-color:(#=obj.progress>100?'red':'rgb(153,255,51);'#);"></div>
+            <div class="ganttCustomProgressBars (#=obj.ganttUsesCustomProgress?'active':''#) (#=(obj.ganttHasPrimaryProgressSlot && obj.ganttHasSecondaryProgressSlot)?'double':'single'#)">
+                <div class="ganttCustomProgressBar" style="width:(#=obj.ganttHasPrimaryProgressSlot ? obj.ganttPrimaryProgress : obj.ganttSecondaryProgress#)%;"></div>
+                (# if (obj.ganttHasPrimaryProgressSlot && obj.ganttHasSecondaryProgressSlot) { #)
+                    <div class="ganttCustomProgressBar" style="width:(#=obj.ganttSecondaryProgress#)%;"></div>
+                (# } #)
+            </div>
             <div class="milestone (#=obj.startIsMilestone?'active':''#)" ></div>
 
             <div class="taskLabel"></div>
@@ -270,10 +276,7 @@
 		<tbody>
 			<tr>
 				<td>
-                    {assign var="PROJECT_TASK_MODEL" value=Vtiger_Module_Model::getInstance('ProjectTask')}
-                    {assign var="IS_MODULE_EDITABLE" value=$PROJECT_TASK_MODEL->isPermitted('CreateView')}
-                    {assign var=SINGLE_MODULE value="SINGLE_ProjectTask"}
-					{vtranslate('LBL_NO')} {vtranslate('ProjectTask', 'ProjectTask')} {vtranslate('LBL_FOUND')} {vtranslate('LBL_NO_DATE_VALUE_MSG', 'ProjectTask')}.{if $IS_MODULE_EDITABLE} <a href="{$PROJECT_TASK_MODEL->getCreateRecordUrl()}&projectid={$PARENT_ID}"> {vtranslate('LBL_CREATE')} </a>{/if}
+					{vtranslate('LBL_NO_GANTT_ITEMS_FOUND', 'Settings:Vtiger')}
 				</td>
 			</tr>
 		</tbody>
