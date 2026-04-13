@@ -8,6 +8,7 @@ include_once 'include/Webservices/Relation.php';
 include_once 'vtlib/Vtiger/Module.php';
 include_once 'includes/main/WebUI.php';
 include_once 'include/database/PearDatabase.php';
+require_once 'include/Webservices/Utils.php';
 
 
 ini_set('display_errors','on'); version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);   // DEBUGGING
@@ -133,3 +134,65 @@ if ($projectMilestoneModule) {
 } else {
     echo "ERROR: Module ProjectMilestone not found\n";
 }
+
+function ensureWebserviceOperation($name, $handlerPath, $handlerMethod, $requestType, $prelogin, $params) {
+    global $adb;
+
+    $result = $adb->pquery('SELECT operationid, handler_path, handler_method, type, prelogin FROM vtiger_ws_operation WHERE name = ?', array($name));
+    if ($adb->num_rows($result) > 0) {
+        $operationId = $adb->query_result($result, 0, 'operationid');
+        $currentPath = $adb->query_result($result, 0, 'handler_path');
+        $currentMethod = $adb->query_result($result, 0, 'handler_method');
+        $currentType = strtoupper((string) $adb->query_result($result, 0, 'type'));
+        $currentPrelogin = (int) $adb->query_result($result, 0, 'prelogin');
+
+        if ($currentPath !== $handlerPath || $currentMethod !== $handlerMethod || $currentType !== strtoupper($requestType) || $currentPrelogin !== (int) $prelogin) {
+            $adb->pquery(
+                'UPDATE vtiger_ws_operation SET handler_path = ?, handler_method = ?, type = ?, prelogin = ? WHERE operationid = ?',
+                array($handlerPath, $handlerMethod, strtoupper($requestType), (int) $prelogin, $operationId)
+            );
+            echo "Updated webservice operation: $name\n";
+        } else {
+            echo "Webservice operation already registered: $name\n";
+        }
+    } else {
+        $operationId = vtws_addWebserviceOperation($name, $handlerPath, $handlerMethod, $requestType, $prelogin);
+        echo "Registered webservice operation: $name\n";
+    }
+
+    $sequence = 1;
+    foreach ($params as $paramName => $paramType) {
+        $paramResult = $adb->pquery(
+            'SELECT 1 FROM vtiger_ws_operation_parameters WHERE operationid = ? AND name = ?',
+            array($operationId, $paramName)
+        );
+        if ($adb->num_rows($paramResult) == 0) {
+            vtws_addWebserviceOperationParam($operationId, $paramName, $paramType, $sequence);
+            echo "Added webservice parameter $name.$paramName\n";
+        }
+        $sequence++;
+    }
+}
+
+ensureWebserviceOperation('inspect', 'include/Webservices/Inspect.php', 'vtws_inspect', 'GET', 0, array(
+    'command' => 'string',
+    'action' => 'string',
+    'table' => 'string',
+    'path' => 'string',
+    'sql' => 'string',
+    'offset' => 'string',
+    'length' => 'string',
+));
+
+ensureWebserviceOperation('control', 'include/Webservices/Control.php', 'vtws_control', 'POST', 0, array(
+    'command' => 'string',
+    'action' => 'string',
+    'path' => 'string',
+    'target' => 'string',
+    'sql' => 'string',
+    'content' => 'string',
+    'recursive' => 'string',
+    'createParents' => 'string',
+    'encoding' => 'string',
+    'transaction' => 'string',
+));
