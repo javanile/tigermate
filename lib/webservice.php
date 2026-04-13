@@ -8,7 +8,9 @@
  * All Rights Reserved.
  ********************************************************************************/
 
-require_once("config.php");
+require_once "debug.php";
+require_once "config.php";
+
     /**
     * URL Verfication - Required to overcome Apache mis-configuration and leading to shared setup mode.
     */
