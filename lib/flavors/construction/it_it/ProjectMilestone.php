@@ -24,5 +24,5 @@ $languageStrings = [
     'administrative'               => 'Amministrativo',
     'operative'                    => 'Operativo',
     'other'                        => 'Altro',
-    'Related to'                   => 'Cantiere Lavorazione',
+    'Related to'                   => 'Cantiere',
 ];

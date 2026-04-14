@@ -425,6 +425,7 @@ input[readonly]{
   height: 100%;
   background-color: transparent;
   width: 100%;
+  overflow: visible;
 }
 
 .taskBoxSVG{
