@@ -446,12 +446,8 @@ input[readonly]{
   fill:rgba(255,255,255,0.78);
 }
 
-[data-overflow="1"] .ganttCustomProgressPrimarySVG{
+.ganttProgressOverflowSVG{
   fill:rgba(220,80,60,0.85);
-}
-
-[data-overflow="1"] .ganttCustomProgressSecondarySVG{
-  fill:rgba(180,40,20,0.85);
 }
 
 .ganttCustomProgressSecondarySVG{
