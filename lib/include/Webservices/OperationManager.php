@@ -135,9 +135,9 @@
 			$result;
 			$value = stripslashes($value);
 			$type = strtolower($type);
-			if($this->inParamProcess[$type]){
-				$result = call_user_func($this->inParamProcess[$type],$value);
-			}else{
+			if (isset($this->inParamProcess[$type]) && $this->inParamProcess[$type]) {
+				$result = call_user_func($this->inParamProcess[$type], $value);
+			} else {
 				$result = $value;
 			}
 			return $result;
