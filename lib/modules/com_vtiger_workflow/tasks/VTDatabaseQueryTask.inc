@@ -77,7 +77,8 @@ class VTDatabaseQueryTask extends VTTask {
     public static function replaceVariables(string $sql, $entityData, $lastInsertId = null, array $lastRow = []): string {
         // 1. $_row[field]
         $sql = preg_replace_callback('/\$_row\[([a-zA-Z_][a-zA-Z0-9_]*)\]/', function ($m) use ($lastRow) {
-            return addslashes($lastRow[$m[1]] ?? '');
+            $val = $lastRow[$m[1]] ?? null;
+            return ($val !== null && $val !== '') ? addslashes($val) : '0';
         }, $sql);
 
         // 2. $_id (crmid of the current record — extracted from vtiger format e.g. "13x4" → 4)
