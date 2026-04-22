@@ -16,6 +16,7 @@
 
 /lib/test/templates_c/
 /lib/test/vtlib/HTML/
+!/lib/test/vtlib/HTML/.gitkeep
 /lib/user_privileges/
 /lib/config.inc.php
 /lib/tabdata.php
