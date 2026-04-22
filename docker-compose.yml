@@ -44,8 +44,8 @@ services:
 
   mysql:
     image: mysql:8.0.31
-    mem_limit: 350m
-    memswap_limit: 350m
+    #mem_limit: 350m
+    #memswap_limit: 350m
     command: --sql-mode= --innodb-buffer-pool-size=128M --performance-schema=OFF
     environment:
       - MYSQL_DATABASE=tigermate
