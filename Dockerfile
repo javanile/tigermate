@@ -12,6 +12,16 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 RUN a2enmod rewrite
 
+## Upload settings
+RUN printf "%s\n" \
+	"max_execution_time = 0" \
+	"memory_limit = 4G" \
+	"post_max_size = 4G" \
+	"upload_max_filesize = 4G" \
+	"max_input_time = 0" \
+	"max_input_var = 10000" \
+	> /usr/local/etc/php/conf.d/upload.ini
+
 ## Xdebug
 #RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
 #RUN printf "%s\n" \
