@@ -44,12 +44,12 @@ $flavorLanguageStrings = [
     'LBL_SELECT_STATUS'                        => 'Stato - Tutto',
 
     //picklist values
-    'prospecting'          => 'Prospezione',
-    'in progress'          => 'In Progress',
-    'initiated'            => 'Avviato',
-    'waiting for feedback' => 'In attesa di un commento',
+    'prospecting'          => 'In fase di offerta',
+    'in progress'          => 'In corso',
+    'initiated'            => 'Iniziato',
+    'waiting for feedback' => 'Da iniziare',
     'on hold'              => 'In attesa',
-    'archived'             => 'Archiviati',
+    'archived'             => 'Archiviato',
     'completed'            => 'Completato',
     'delivered'            => 'Consegnato',
     'administrative'       => 'Amministrativo',
