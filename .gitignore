@@ -15,6 +15,7 @@
 /vendor/
 
 /lib/test/templates_c/
+/lib/test/vtlib/HTML/
 /lib/user_privileges/
 /lib/config.inc.php
 /lib/tabdata.php

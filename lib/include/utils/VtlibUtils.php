@@ -652,6 +652,23 @@ function vtlib_isDirWriteable($dirpath) {
 
 /** HTML Purifier global instance */
 $__htmlpurifier_instance = false;
+
+function vtlib_normalizeHtmlPurifyInput($input) {
+	if (!is_string($input)) {
+		return $input;
+	}
+	if (stripos($input, '<html') === false && stripos($input, '<head') === false && stripos($input, '<body') === false) {
+		return $input;
+	}
+
+	$input = preg_replace('/<!doctype\b[^>]*>/is', '', $input);
+	$input = preg_replace('/<head\b[^>]*>.*?<\/head\s*>/is', '', $input);
+	$input = preg_replace('/<\/?html\b[^>]*>/is', '', $input);
+	$input = preg_replace('/<\/?body\b[^>]*>/is', '', $input);
+
+	return $input;
+}
+
 /**
  * Purify (Cleanup) malicious snippets of code from the input
  *
@@ -679,6 +696,9 @@ function vtlib_purify($input, $ignore = false) {
 
 
     if (!$ignore) {
+        if (!is_array($input)) {
+            $input = vtlib_normalizeHtmlPurifyInput($input);
+        }
         // Initialize the instance if it has not yet done
         if ($__htmlpurifier_instance == false) {
             if (empty($use_charset))
@@ -704,6 +724,29 @@ function vtlib_purify($input, $ignore = false) {
             $config->set('CSS.AllowTricky', true);
             $config->set('URI.AllowedSchemes', $allowedSchemes);
             $config->set('Attr.EnableID', true);
+
+            // Allow HTML5 video and source elements
+            $config->set('HTML.DefinitionID', 'vtiger-html5-video');
+            $config->set('HTML.DefinitionRev', 2);
+            if ($def = $config->maybeGetRawHTMLDefinition()) {
+                $def->addElement('video', 'Block', 'Flow', 'Common', array(
+                    'src'      => 'URI',
+                    'type'     => 'Text',
+                    'width'    => 'Length',
+                    'height'   => 'Length',
+                    'poster'   => 'URI',
+                    'preload'  => 'Enum#auto,metadata,none',
+                    'controls' => 'Bool#controls',
+                    'autoplay' => 'Bool#autoplay',
+                    'loop'     => 'Bool#loop',
+                    'muted'    => 'Bool#muted',
+                ));
+                $def->addElement('source', 'Inline', 'Empty', 'Common', array(
+                    'src'  => 'URI',
+                    'type' => 'Text',
+                    'media' => 'Text',
+                ));
+            }
 
             $__htmlpurifier_instance = new HTMLPurifier($config);
         }
