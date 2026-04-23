@@ -20,6 +20,7 @@
 /lib/user_privileges/
 /lib/config.inc.php
 /lib/tabdata.php
+/lib/test/logo/favicon.ico
 
 /.hosts
 /.env

@@ -11,6 +11,8 @@
 class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model {
 
 	STATIC $logoSupportedFormats = array('jpeg', 'jpg', 'png', 'gif', 'pjpeg', 'x-png');
+	STATIC $faviconSupportedFormats = array('ico', 'png', 'jpg', 'jpeg', 'gif');
+	var $faviconFilename = 'favicon.ico';
 
 	var $baseTable = 'vtiger_organizationdetails';
 	var $baseIndex = 'organization_id';
@@ -102,6 +104,22 @@ class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model 
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * Function to get Favicon path to display
+	 */
+	public function getFaviconPath() {
+		$path = $this->logoPath . $this->faviconFilename;
+		return file_exists($path) ? $path : '';
+	}
+
+	/**
+	 * Function to save the favicon
+	 */
+	public function saveFavicon() {
+		$uploadDir = vglobal('root_directory') . '/' . $this->logoPath;
+		move_uploaded_file($_FILES['favicon']['tmp_name'], $uploadDir . $this->faviconFilename);
 	}
 
 	/**

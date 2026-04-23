@@ -78,13 +78,9 @@
 		}
 		.marketingDiv {
 			color: #303030;
-                        height: 510px !important;
 		}
 		.separatorDiv {
-			background-color: #7C7C7C;
-			width: 2px;
-			height: 460px;
-			margin-left: 20px;
+			display: none;
 		}
 		.user-logo {
 			height: 110px;
@@ -208,9 +204,13 @@
 
 	<span class="app-nav"></span>
 	<div class="container-fluid loginPageContainer">
-		<div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+		<div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
 			<div class="loginDiv widgetHeight">
-				<img class="img-responsive user-logo" src="layouts/v7/resources/Images/vtiger.png">
+				{if $COMPANY_LOGO->get('imagepath')}
+					<img class="img-responsive user-logo" src="{$COMPANY_LOGO->get('imagepath')}" alt="{$COMPANY_LOGO->get('alt')}">
+				{else}
+					<img class="img-responsive user-logo" src="layouts/v7/resources/Images/vtiger.png">
+				{/if}
 				<div>
 					<span class="{if !$ERROR}hide{/if} failureMessage" id="validationMessage">{$MESSAGE}</span>
 					<span class="{if !$MAIL_STATUS}hide{/if} successMessage">{$MESSAGE}</span>
@@ -258,62 +258,63 @@
 			</div>
 		</div>
 
-		<div class="col-lg-1 hidden-xs hidden-sm hidden-md">
-			<div class="separatorDiv"></div>
-		</div>
-
-		<div class="col-lg-5 hidden-xs hidden-sm hidden-md">
-			<div class="marketingDiv widgetHeight">
-				{if $JSON_DATA}
-					<div class="scrollContainer">
-						{assign var=ALL_BLOCKS_COUNT value=0}
-						{foreach key=BLOCK_NAME item=BLOCKS_DATA from=$JSON_DATA}
-							{if $BLOCKS_DATA}
-								<div>
-									<h4>{$BLOCKS_DATA[0].heading}</h4>
-									<ul class="bxslider">
-										{foreach item=BLOCK_DATA from=$BLOCKS_DATA}
-											<li class="slide">
-												{assign var=ALL_BLOCKS_COUNT value=$ALL_BLOCKS_COUNT+1}
-												{if $BLOCK_DATA.image}
-													<div class="col-lg-3" style="min-height: 100px;"><img src="{$BLOCK_DATA.image}" style="width: 100%;height: 100%;margin-top: 10px;"/></div>
-													<div class="col-lg-9">
-												{else}
-													<div class="col-lg-12">
-												{/if}
-												<div title="{$BLOCK_DATA.summary}">
-													<h3><b>{$BLOCK_DATA.displayTitle}</b></h3>
-													{$BLOCK_DATA.displaySummary}<br><br>
-													<a href="{$BLOCK_DATA.url}" target="_blank"><u>{$BLOCK_DATA.urlalt}</u></a>
-												</div>
-												{if $BLOCK_DATA.image}
-													</div>
-												{else}
-													</div>
-												{/if}
-											</li>
-										{/foreach}
-									</ul>
-								</div>
-								{if $ALL_BLOCKS_COUNT neq $DATA_COUNT}
-									<br>
-									<hr>
-								{/if}
-							{/if}
-						{/foreach}
-					</div>
-				{else}
-					<div class="inActiveImgDiv">
-						<div>
-							<h4>Get more out of Vtiger with extensions from</h4>
-							<h4>Vtiger Marketplace</h4>
-						</div>
-						<a href="https://marketplace.vtiger.com/app/listings" target="_blank" style="margin-right: 25px;"><img src="layouts/v7/resources/Images/extensionstore.png" style="width: 85%; height: 100%; margin-top: 25px;"/></a>
-					</div>
-				{/if}
+		<div class="col-lg-6 hidden-xs hidden-sm hidden-md">
+			<div class="marketingDiv widgetHeight clockWidget">
+				<div class="clock-container">
+					<div class="clock-time" id="clockTime">00:00</div>
+					<div class="clock-date" id="clockDate"></div>
 				</div>
 			</div>
 		</div>
+
+		<style>
+			.clockWidget {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.clock-container {
+				text-align: center;
+				color: rgba(255,255,255,0.95);
+				user-select: none;
+				font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			}
+			.clock-time {
+				font-size: 88px;
+				font-weight: 100;
+				letter-spacing: 8px;
+				line-height: 1;
+				text-shadow: 0 2px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.5);
+				margin-bottom: 16px;
+			}
+			.clock-date {
+				font-size: 15px;
+				font-weight: 300;
+				letter-spacing: 5px;
+				text-transform: uppercase;
+				color: rgba(255,255,255,0.8);
+				text-shadow: 0 1px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5);
+			}
+		</style>
+
+		<script>
+			(function() {
+				var locale = navigator.language || navigator.userLanguage || 'en';
+
+				function pad(n) { return n < 10 ? '0' + n : n; }
+
+				function tick() {
+					var now = new Date();
+					document.getElementById('clockTime').textContent =
+						pad(now.getHours()) + ':' + pad(now.getMinutes());
+					document.getElementById('clockDate').textContent =
+						now.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+				}
+
+				tick();
+				setInterval(tick, 10000);
+			})();
+		</script>
 
 		<script>
 			jQuery(document).ready(function () {
@@ -397,27 +398,6 @@
 				});
 				loginFormDiv.find('#username').focus();
 
-				var slider = jQuery('.bxslider').bxSlider({
-					auto: true,
-					pause: 4000,
-					nextText: "",
-					prevText: "",
-					autoHover: true
-				});
-				jQuery('.bx-prev, .bx-next, .bx-pager-item').live('click',function(){ slider.startAuto(); });
-				jQuery('.bx-wrapper .bx-viewport').css('background-color', 'transparent');
-				jQuery('.bx-wrapper .bxslider li').css('text-align', 'left');
-				jQuery('.bx-wrapper .bx-pager').css('bottom', '-40px');
-
-				var params = {
-					theme		: 'dark-thick',
-					setHeight	: '100%',
-					advanced	:	{
-										autoExpandHorizontalScroll:true,
-										setTop: 0
-									}
-				};
-				jQuery('.scrollContainer').mCustomScrollbar(params);
 			});
 		</script>
 		</div>

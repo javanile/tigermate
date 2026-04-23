@@ -94,6 +94,22 @@
 						</div>
 					</div>
 				</div>
+				<div class="form-group companydetailsedit">
+					<label class="col-sm-2 fieldLabel control-label">Favicon</label>
+					<div class="fieldValue col-sm-5">
+						<div class="company-logo-content">
+							{if $MODULE_MODEL->getFaviconPath()}
+								<img src="{$MODULE_MODEL->getFaviconPath()}" class="alignMiddle" style="max-height:32px;" />
+							{else}
+								<img src="layouts/v7/skins/images/favicon.ico" class="alignMiddle" style="max-height:32px;" />
+							{/if}
+							<br><hr>
+							<input type="file" name="favicon" id="faviconFile" />
+						</div>
+						<br>
+						<div class="alert alert-info">Formati ammessi: .ico, .png, .jpg, .gif (consigliato 32x32 pixel)</div>
+					</div>
+				</div>
 
 				{foreach from=$MODULE_MODEL->getFields() item=FIELD_TYPE key=FIELD}
 					{if $FIELD neq 'logoname' && $FIELD neq 'logo' }

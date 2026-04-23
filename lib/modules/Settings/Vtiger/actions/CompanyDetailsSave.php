@@ -77,6 +77,19 @@ class Settings_Vtiger_CompanyDetailsSave_Action extends Settings_Vtiger_Basic_Ac
 				}
 			}
 			$moduleModel->save();
+
+			if (!empty($_FILES['favicon']['name'])) {
+				$favDetails = $_FILES['favicon'];
+				$favType = strtolower(pathinfo($favDetails['name'], PATHINFO_EXTENSION));
+				$mimeType = mime_content_type($favDetails['tmp_name']);
+				$mimeTypeContents = explode('/', $mimeType);
+				$imageContents = file_get_contents($favDetails['tmp_name']);
+				if ($favDetails['size'] && in_array($favType, Settings_Vtiger_CompanyDetails_Model::$faviconSupportedFormats)
+					&& $mimeTypeContents[0] === 'image'
+					&& preg_match('/(<\?php?(.*?))/i', $imageContents) == 0) {
+					$moduleModel->saveFavicon();
+				}
+			}
 		}
 		if ($saveLogo && $status) {
 			return ;

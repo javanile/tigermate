@@ -89,6 +89,9 @@ class Users_Login_View extends Vtiger_View_Controller {
 			$message = 'Mail has been sent to your inbox, please check your e-mail';
 		}
 
+		$companyDetails = Vtiger_CompanyDetails_Model::getInstanceById();
+		$viewer->assign('COMPANY_LOGO', $companyDetails->getLogo());
+
 		$viewer->assign('ERROR', $error);
 		$viewer->assign('MESSAGE', $message);
 		$viewer->assign('MAIL_STATUS', $mailStatus);
