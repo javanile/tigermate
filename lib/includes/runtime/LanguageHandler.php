@@ -43,6 +43,9 @@ class Vtiger_Language_Handler {
 		if ($translatedString === null) {
 			$translatedString = $key;
 		}
+
+
+
 		return $translatedString;
 	}
 
@@ -126,12 +129,12 @@ class Vtiger_Language_Handler {
 		if(empty(self::$languageContainer[$language][$module])){
 			$qualifiedName = 'languages.'.$language.'.'.$module;
 			$file = Vtiger_Loader::resolveNameToPath($qualifiedName);
-
 			$languageStrings = $jsLanguageStrings = array();
             $flavorLanguageStrings = $flavorJsLanguageStrings = array();
 
             if (file_exists($file)) {
 				require $file;
+
 
                 $flavor = getenv('TM_FLAVOR');
                 if (in_array($flavor, ['construction', 'education', 'healthcare'])) {
@@ -155,6 +158,8 @@ class Vtiger_Language_Handler {
 		// add custom translation for module from language/custom/$language/$module.php file
 		$qualifiedCustomName = 'languages.custom.'.$language.'.'.$module;
         $file = Vtiger_Loader::resolveNameToPath($qualifiedCustomName);
+
+
 
         $languageStrings = $jsLanguageStrings = array();
         if (file_exists($file)) {
