@@ -18,6 +18,7 @@
 /lib/test/vtlib/HTML/
 !/lib/test/vtlib/HTML/.gitkeep
 /lib/user_privileges/
+!/lib/user_privileges/.gitkeep
 /lib/config.inc.php
 /lib/tabdata.php
 /lib/test/logo/favicon.ico

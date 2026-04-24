@@ -2,7 +2,13 @@
 up:
 	@docker compose up --build --force-recreate --remove-orphans -d
 
-start: fix-permissions up watch-assets
+init:
+	@find lib/init -maxdepth 2 -type f | while read f; do \
+		dest="lib/$$(basename $$f)"; \
+		if [ ! -f "$$dest" ]; then cp "$$f" "$$dest"; fi; \
+	done
+
+start: init fix-permissions up watch-assets
 	@echo "Visit: http://localhost:8080"
 
 restart: fix-permissions
