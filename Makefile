@@ -49,6 +49,24 @@ fix-permissions:
 			lib/test/product/ lib/test/user/ lib/test/contact/ lib/test/logo/ \
 		"
 
+deep-reset:
+	@read -p "Sei sicuro di voler fare il DEEP RESET? Cancella tutte le tabelle e svuota config.inc.php [s/N]: " confirm; \
+	if [ "$$confirm" = "s" ] || [ "$$confirm" = "S" ]; then \
+		echo "Dropping all tables..."; \
+		docker compose run --rm tigermate bash -c " \
+			mysql -h mysql -uroot -psecret tigermate -e 'SET FOREIGN_KEY_CHECKS=0;' && \
+			mysql -h mysql -uroot -psecret tigermate -sNe \
+				\"SELECT CONCAT('DROP TABLE IF EXISTS \\\`',table_name,'\\\`;') \
+				FROM information_schema.tables WHERE table_schema='tigermate';\" \
+			| mysql -h mysql -uroot -psecret tigermate && \
+			mysql -h mysql -uroot -psecret tigermate -e 'SET FOREIGN_KEY_CHECKS=1;'"; \
+		echo "Svuoto config.inc.php..."; \
+		> lib/config.inc.php; \
+		echo "Deep reset completato."; \
+	else \
+		echo "Operazione annullata."; \
+	fi
+
 install:
 	@docker compose run --rm --no-deps tigermate composer install && true
 
