@@ -36,7 +36,7 @@ snapshot() {
     find "$LIB_DIR" -type f \
         \( -iname '*.js' -o -iname '*.css' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \
            -o -iname '*.eot' -o -iname '*.woff' -o -iname '*.woff2' -o -iname '*.ttf' \
-           -o -iname '*.svg' -o -iname '*.gif' -o -iname '*.html' \) \
+           -o -iname '*.svg' -o -iname '*.gif' -o -iname '*.html' -o -iname '*.ico' \) \
         -printf '%P\t%T@\n' | sort
 }
 
@@ -77,17 +77,19 @@ invalidate_changed_assets() {
 }
 
 run_watcher() {
-    local initial_snapshot
-    initial_snapshot="$(mktemp)"
-    trap 'rm -f "$initial_snapshot"' EXIT
+    local next_snapshot
+    next_snapshot="$(mktemp)"
+    trap 'rm -f "$next_snapshot"' EXIT
 
-    snapshot > "$initial_snapshot"
-    mv "$initial_snapshot" "$SNAPSHOT_FILE"
+    snapshot > "$next_snapshot"
+    if [ -f "$SNAPSHOT_FILE" ]; then
+        invalidate_changed_assets "$SNAPSHOT_FILE" "$next_snapshot"
+    fi
+    mv "$next_snapshot" "$SNAPSHOT_FILE"
 
     printf '[watch-assets] watching %s -> %s\n' "$LIB_DIR" "$PUBLIC_DIR"
 
     while true; do
-        local next_snapshot
         next_snapshot="$(mktemp)"
         snapshot > "$next_snapshot"
         invalidate_changed_assets "$SNAPSHOT_FILE" "$next_snapshot"

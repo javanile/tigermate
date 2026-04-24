@@ -68,15 +68,18 @@
 		{literal}jQuery(document).ready(function() { window._PAGEREADYAT = new Date(); });
 		jQuery(window).load(function() {
 			window._PAGELOADAT = new Date();
+			if (typeof window._PAGEREADYAT === 'undefined') {
+				window._PAGEREADYAT = window._PAGELOADAT;
+			}
 			window._PAGELOADREQSENT = false;
 			// Transmit the information to server about page render time now.
 			if (typeof _REQSTARTTIME != 'undefined') {
 				// Work with time converting it to GMT (assuming _REQSTARTTIME set by server is also in GMT)
-				var _PAGEREADYTIME = _PAGEREADYAT.getTime() / 1000.0; // seconds
-				var _PAGELOADTIME = _PAGELOADAT.getTime() / 1000.0;    // seconds
+				var _PAGEREADYTIME = window._PAGEREADYAT.getTime() / 1000.0; // seconds
+				var _PAGELOADTIME = window._PAGELOADAT.getTime() / 1000.0;    // seconds
 				var data = { page_request: _REQSTARTTIME, page_ready: _PAGEREADYTIME, page_load: _PAGELOADTIME };
 				data['page_xfer'] = (_PAGELOADTIME - _REQSTARTTIME).toFixed(3);
-				data['client_tzoffset']= -1*_PAGELOADAT.getTimezoneOffset()*60;
+				data['client_tzoffset']= -1*window._PAGELOADAT.getTimezoneOffset()*60;
 				data['client_now'] = JSON.parse(JSON.stringify(new Date()));
 				if (!window._PAGELOADREQSENT) {
 					// To overcome duplicate firing on Chrome

@@ -37,6 +37,111 @@ if (!Vtiger_Utils::CheckTable('vtiger_cv2rs')) {
 				CONSTRAINT `vtiger_rolesd_ibfk_1` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE)', true);
 }
 
+if (!Vtiger_Utils::CheckTable('vtiger_webforms_field')) {
+    Vtiger_Utils::CreateTable(
+        'vtiger_webforms_field',
+        '(
+            `id` int(19) NOT NULL AUTO_INCREMENT,
+            `webformid` int(19) NOT NULL,
+            `fieldname` varchar(50) NOT NULL,
+            `neutralizedfield` varchar(255) NOT NULL,
+            `defaultvalue` TEXT DEFAULT NULL,
+            `required` int(10) NOT NULL DEFAULT \'0\',
+            `sequence` int(10) DEFAULT NULL,
+            `hidden` int(10) DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            KEY `webforms_webforms_field_idx` (`id`),
+            KEY `fk_1_vtiger_webforms_field` (`webformid`),
+            KEY `fk_2_vtiger_webforms_field` (`fieldname`),
+            CONSTRAINT `fk_1_vtiger_webforms_field` FOREIGN KEY (`webformid`) REFERENCES `vtiger_webforms` (`id`) ON DELETE CASCADE,
+            CONSTRAINT `fk_3_vtiger_webforms_field` FOREIGN KEY (`fieldname`) REFERENCES `vtiger_field` (`fieldname`) ON DELETE CASCADE
+        )',
+        true
+    );
+    echo "Created table: vtiger_webforms_field\n";
+}
+
+$webformsFieldNeutralizedColumn = $adb->pquery("SHOW COLUMNS FROM vtiger_webforms_field LIKE 'neutralizedfield'", array());
+if ($adb->num_rows($webformsFieldNeutralizedColumn) > 0) {
+    $neutralizedFieldType = strtolower($adb->query_result($webformsFieldNeutralizedColumn, 0, 'Type'));
+    if ($neutralizedFieldType !== 'varchar(255)') {
+        $adb->pquery('ALTER TABLE vtiger_webforms_field MODIFY neutralizedfield varchar(255) NOT NULL', array());
+        echo "Extended vtiger_webforms_field.neutralizedfield to VARCHAR(255)\n";
+    }
+}
+
+$webformsFieldDefaultValueColumn = $adb->pquery("SHOW COLUMNS FROM vtiger_webforms_field LIKE 'defaultvalue'", array());
+if ($adb->num_rows($webformsFieldDefaultValueColumn) > 0) {
+    $defaultValueType = strtolower($adb->query_result($webformsFieldDefaultValueColumn, 0, 'Type'));
+    if ($defaultValueType !== 'text' && $defaultValueType !== 'mediumtext' && $defaultValueType !== 'longtext') {
+        $adb->pquery('ALTER TABLE vtiger_webforms_field MODIFY defaultvalue TEXT DEFAULT NULL', array());
+        echo "Extended vtiger_webforms_field.defaultvalue to TEXT\n";
+    }
+}
+
+$webformsFieldSequenceColumn = $adb->pquery("SHOW COLUMNS FROM vtiger_webforms_field LIKE 'sequence'", array());
+if ($adb->num_rows($webformsFieldSequenceColumn) === 0) {
+    $adb->pquery('ALTER TABLE vtiger_webforms_field ADD COLUMN sequence int(10) DEFAULT NULL', array());
+    echo "Added vtiger_webforms_field.sequence column\n";
+}
+
+$webformsFieldHiddenColumn = $adb->pquery("SHOW COLUMNS FROM vtiger_webforms_field LIKE 'hidden'", array());
+if ($adb->num_rows($webformsFieldHiddenColumn) === 0) {
+    $adb->pquery('ALTER TABLE vtiger_webforms_field ADD COLUMN hidden int(10) DEFAULT NULL', array());
+    echo "Added vtiger_webforms_field.hidden column\n";
+}
+
+$webformsWithoutFields = $adb->pquery(
+    'SELECT id, targetmodule FROM vtiger_webforms WHERE id NOT IN (SELECT DISTINCT webformid FROM vtiger_webforms_field)',
+    array()
+);
+for ($i = 0; $i < $adb->num_rows($webformsWithoutFields); $i++) {
+    $webformId = (int) $adb->query_result($webformsWithoutFields, $i, 'id');
+    $targetModule = $adb->query_result($webformsWithoutFields, $i, 'targetmodule');
+    $mandatoryFields = $adb->pquery(
+        'SELECT vf.fieldname, vf.fieldlabel, vf.defaultvalue
+         FROM vtiger_field vf
+         INNER JOIN vtiger_tab vt ON vt.tabid = vf.tabid
+         WHERE vt.name = ?
+           AND vf.presence IN (0, 2)
+           AND vf.displaytype IN (1, 10)
+           AND vf.quickcreate IN (0, 2)
+           AND vf.masseditable != 0
+           AND vf.typeofdata LIKE ?',
+        array($targetModule, '%~M')
+    );
+    if ($adb->num_rows($mandatoryFields) === 0) {
+        echo "Skipped webform $webformId: target module $targetModule not found\n";
+        continue;
+    }
+
+    $sequence = 1;
+    $insertedFields = 0;
+    for ($j = 0; $j < $adb->num_rows($mandatoryFields); $j++) {
+        $fieldName = $adb->query_result($mandatoryFields, $j, 'fieldname');
+        $fieldLabel = $adb->query_result($mandatoryFields, $j, 'fieldlabel');
+        $defaultValue = $adb->query_result($mandatoryFields, $j, 'defaultvalue');
+        if ($defaultValue === false || $defaultValue === null) {
+            $defaultValue = '';
+        }
+        $neutralizedField = $fieldName;
+        if (substr($fieldName, 0, 3) === 'cf_') {
+            $neutralizedField = 'label:'.str_replace(' ', '_', decode_html($fieldLabel));
+        }
+        $adb->pquery(
+            'INSERT INTO vtiger_webforms_field(webformid, fieldname, neutralizedfield, defaultvalue, required, sequence, hidden) VALUES(?, ?, ?, ?, ?, ?, ?)',
+            array($webformId, $fieldName, $neutralizedField, $defaultValue, 1, $sequence++, 0)
+        );
+        $insertedFields++;
+    }
+
+    if ($insertedFields > 0) {
+        echo "Repaired webform $webformId with $insertedFields mandatory fields\n";
+    } else {
+        echo "Skipped webform $webformId: no mandatory editable fields found for $targetModule\n";
+    }
+}
+
 $ganttSettingKey = 'display_mode';
 $ganttDefaultDisplayMode = 'all';
 $validGanttDisplayModes = array('all', 'tasks', 'milestones');

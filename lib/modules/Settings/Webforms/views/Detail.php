@@ -35,6 +35,35 @@ class Settings_Webforms_Detail_View extends Settings_Vtiger_Index_View {
 
 		$recordStructure = Vtiger_RecordStructure_Model::getInstanceFromRecordModel($recordModel, Vtiger_RecordStructure_Model::RECORD_STRUCTURE_MODE_DETAIL);
 		$moduleModel = $recordModel->getModule();
+		$roundRobinUsers = $recordModel->get('roundrobin_userid');
+		if (is_string($roundRobinUsers) && $roundRobinUsers !== '') {
+			$decodedRoundRobinUsers = json_decode(html_entity_decode($roundRobinUsers, ENT_QUOTES, 'UTF-8'), true);
+			$roundRobinUsers = is_array($decodedRoundRobinUsers) ? $decodedRoundRobinUsers : array();
+		}
+		if (!is_array($roundRobinUsers)) {
+			$roundRobinUsers = array();
+		}
+
+		$roundRobinUserNames = array();
+		foreach ($roundRobinUsers as $roundRobinUserId) {
+			if ($roundRobinUserId) {
+				$roundRobinUserNames[] = getOwnerName($roundRobinUserId);
+			}
+		}
+
+		$detailInformation = array(
+			array('label' => 'Webform Name', 'value' => $recordModel->getName()),
+			array('label' => 'Module', 'value' => vtranslate($recordModel->get('targetmodule'), $recordModel->get('targetmodule'))),
+			array('label' => 'Public Id', 'value' => $recordModel->get('publicid')),
+			array('label' => 'Post Url', 'value' => $recordModel->get('posturl')),
+			array('label' => 'Return Url', 'value' => $recordModel->get('returnurl')),
+			array('label' => 'Status', 'value' => $recordModel->get('enabled') ? vtranslate('LBL_ACTIVE', $qualifiedModuleName) : vtranslate('LBL_INACTIVE', $qualifiedModuleName)),
+			array('label' => 'Captcha Enabled', 'value' => $recordModel->get('captcha') ? vtranslate('LBL_YES', $qualifiedModuleName) : vtranslate('LBL_NO', $qualifiedModuleName)),
+			array('label' => 'Assigned To', 'value' => getOwnerName($recordModel->get('ownerid'))),
+			array('label' => 'LBL_ASSIGN_ROUND_ROBIN', 'value' => $recordModel->get('roundrobin') ? vtranslate('LBL_YES', $qualifiedModuleName) : vtranslate('LBL_NO', $qualifiedModuleName)),
+			array('label' => 'LBL_ROUNDROBIN_USERS_LIST', 'value' => implode(', ', $roundRobinUserNames)),
+			array('label' => 'Description', 'value' => $recordModel->get('description')),
+		);
 
 		$navigationInfo = ListViewSession::getListViewNavigation($recordId);
 
@@ -46,6 +75,7 @@ class Settings_Webforms_Detail_View extends Settings_Vtiger_Index_View {
 
 		$viewer->assign('BLOCK_LIST', $moduleModel->getBlocks());
 		$viewer->assign('SOURCE_MODULE', $recordModel->get('targetmodule'));
+		$viewer->assign('DETAIL_INFORMATION', $detailInformation);
 		$viewer->assign('DETAILVIEW_LINKS', $recordModel->getDetailViewLinks());
 		$viewer->assign('SELECTED_FIELD_MODELS_LIST', $recordModel->getSelectedFieldsList());
 		$viewer->assign('DOCUMENT_FILE_FIELDS', $recordModel->getFileFields());

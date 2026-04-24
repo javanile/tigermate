@@ -49,6 +49,6 @@ Class Settings_Webforms_ShowForm_View extends Settings_Vtiger_IndexAjax_View {
 		$viewer->assign('ALLOWED_ALL_FILES_SIZE', $recordModel->getModule()->allowedAllFilesSize());
 		$viewer->assign('CAPTCHA_CONFIG', $captchaConfig);
 
-		echo $viewer->view('ShowForm.tpl', $qualifiedModuleName);
+		echo $viewer->view('ShowForm.tpl', $qualifiedModuleName, true);
 	}
 }

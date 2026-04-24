@@ -90,7 +90,7 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 				array(
 						'linktype' => 'LISTVIEWRECORD',
 						'linklabel' => 'LBL_SHOW_FORM',
-						'linkurl' => "javascript:Settings_Webforms_List_Js.showForm(event,'".$this->getId()."');",
+						'linkurl' => "javascript:Settings_Webforms_List_Js.showForm(event,'".$this->getShowFormUrl()."');",
 						'linkicon' => 'fa fa-picture-o icon-picture'
 				),
 				array(
@@ -133,7 +133,7 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 				array(
 						'linktype' => 'DETAILVIEWBASIC',
 						'linklabel' => vtranslate('LBL_SHOW_FORM', $moduleModel->getParentName(). ':' .$moduleModel->getName()),
-						'linkurl' => 'javascript:Settings_Webforms_Detail_Js.showForm("'.$this->getId().'")',
+						'linkurl' => 'javascript:Settings_Webforms_Detail_Js.showForm("'.$this->getShowFormUrl().'")',
 						'linkicon' => 'icon-picture'
 				),
 				array(
@@ -155,6 +155,7 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 	 * @return <Array> list of field models <Settings_Webforms_Field_Model>
 	 */
 	public function getSelectedFieldsList($mode='') {
+		$selectedFields = array();
 		if (!$this->selectedFields) {
 			$targetModule = $this->get('targetmodule');
 			if ($targetModule) {
@@ -268,7 +269,8 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$mode = $this->get('mode');
 
-		$db = PearDatabase::getInstance();		
+		$db = PearDatabase::getInstance();
+		$roundrobinUsersList = null;
 		$this->setCheckBoxValue('enabled');
 		$this->setCheckBoxValue('captcha');
 		$this->setCheckBoxValue('roundrobin');
@@ -294,6 +296,29 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 		//Saving data of source module fields info for this webform
 		$selectedFieldsData = $this->get('selectedFieldsData');
 		$sourceModuleModel = Vtiger_Module_Model::getInstance($this->get('targetmodule'));
+		if (!is_array($selectedFieldsData)) {
+			$selectedFieldsData = array();
+		}
+		if (empty($selectedFieldsData) && $sourceModuleModel) {
+			$sequence = 1;
+			foreach ($this->getAllFieldsList($this->get('targetmodule')) as $blockFields) {
+				foreach ($blockFields as $fieldName => $fieldModel) {
+					if (!$fieldModel->isMandatory(true)) {
+						continue;
+					}
+					$defaultValue = $fieldModel->getDefaultFieldValue();
+					if ($defaultValue === false || $defaultValue === null) {
+						$defaultValue = '';
+					}
+					$selectedFieldsData[$fieldName] = array(
+						'defaultvalue' => $defaultValue,
+						'required' => 1,
+						'sequence' => $sequence++,
+						'hidden' => 0,
+					);
+				}
+			}
+		}
 
 		$fieldInsertQuery = "INSERT INTO vtiger_webforms_field(webformid, fieldname, neutralizedfield, defaultvalue, required, sequence, hidden) VALUES(?, ?, ?, ?, ?, ?, ?)";
 		foreach ($selectedFieldsData as $fieldName => $fieldDetails) {
@@ -343,6 +368,9 @@ class Settings_Webforms_Record_Model extends Settings_Vtiger_Record_Model {
 
 		//Handling document file fields save
 		$fileFields = $this->get('file_fields');
+		if (!is_array($fileFields)) {
+			$fileFields = array();
+		}
 		$db->pquery('DELETE FROM vtiger_webform_file_fields WHERE webformid = ?', array($this->getId()));
 		$fileFieldQuery = 'INSERT INTO vtiger_webform_file_fields (webformid, fieldname, fieldlabel, required) VALUES (?, ?, ?, ?)';
 		$i = 1;
