@@ -126,6 +126,7 @@ class Vtiger_Language_Handler {
 		if(empty(self::$languageContainer[$language][$module])){
 			$qualifiedName = 'languages.'.$language.'.'.$module;
 			$file = Vtiger_Loader::resolveNameToPath($qualifiedName);
+
 			$languageStrings = $jsLanguageStrings = array();
             $flavorLanguageStrings = $flavorJsLanguageStrings = array();
 
@@ -199,7 +200,18 @@ class Vtiger_Language_Handler {
 		if (!empty($userModel) && $userModel->has('language')) {
 			$language = $userModel->get('language');
 		}
-		return empty($language) ? vglobal('default_language') : $language;
+
+        if ($language) {
+            return $language;
+        }
+
+        $language = vglobal('default_language');
+
+        if ($language) {
+            return $language;
+        }
+
+		return 'en_us';
 	}
 
 	/**
