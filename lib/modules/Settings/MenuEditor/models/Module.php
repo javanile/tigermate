@@ -152,13 +152,16 @@ class Settings_MenuEditor_Module_Model extends Settings_Vtiger_Module_Model {
 	 */
 	public static function getMaxSequenceForApp($appName) {
 		$db = PearDatabase::getInstance();
-		$result = $db->pquery('SELECT MAX(sequence) AS maxsequence FROM vtiger_app2tab WHERE appname=?', array($appName));
-		$sequence = 0;
-		if ($db->num_rows($result) > 0) {
-			$sequence = $db->query_result($result, 0, 'maxsequence');
-		}
+		$appResult = $db->pquery('SELECT MAX(sequence) AS maxsequence FROM vtiger_app2tab WHERE appname=?', array($appName));
+		$linkResult = $db->pquery(
+			'SELECT MAX(sequence) AS maxsequence FROM vtiger_links WHERE linktype = ? AND handler_class = ?',
+			array(Settings_MenuEditor_CustomLink_Model::LINK_TYPE, $appName)
+		);
 
-		return $sequence;
+		$appMax = ($db->num_rows($appResult) > 0) ? (int) $db->query_result($appResult, 0, 'maxsequence') : 0;
+		$linkMax = ($db->num_rows($linkResult) > 0) ? (int) $db->query_result($linkResult, 0, 'maxsequence') : 0;
+
+		return max($appMax, $linkMax);
 	}
 
 }

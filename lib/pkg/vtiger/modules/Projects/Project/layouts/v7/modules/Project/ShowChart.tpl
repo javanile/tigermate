@@ -19,6 +19,13 @@
     .taskStatus[status="STATUS_MILESTONE"]    { background-color: #e67e22; }
     .taskBoxSVG[data-type="milestone"] .taskLayout { fill: url(#taskGrad); opacity: 0.85; }
     .taskBoxSVG[data-type="milestone"] .taskLayout { stroke: #e67e22; stroke-width: 2px; }
+    {if $CRM_FLAVOR == 'construction'}
+    #workSpace .gdfColHeader:nth-child(2),
+    #workSpace .taskEditRow td.gdfCell.noClip,
+    .reportActions {
+        display: none !important;
+    }
+    {/if}
 </style>
 {if !empty($PROJECT_TASKS['tasks'])}
     <div class="pull-right" style="margin-right: 5px;">
@@ -205,6 +212,28 @@
         </tr>
         --></div>
     </div>
+    {if $CRM_FLAVOR == 'construction'}
+    <div id="ganttLegendPanel" style="display:none; margin-top: 10px;">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:5px 10px; border:1px solid #e5e5e5; background:#fafafa;">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:28px; height:12px; background:#e67e22; border-radius:2px;"></div>
+                <span style="white-space:nowrap;">{vtranslate('STATUS_MILESTONE','ProjectTask')}</span>
+            </div>
+            {if !empty($GANTT_PRIMARY_FIELD_LABEL)}
+            <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:28px; height:12px; background:rgba(255,255,255,0.75); border:1px solid #aaa; border-radius:2px;"></div>
+                <span style="white-space:nowrap;">{$GANTT_PRIMARY_FIELD_LABEL}</span>
+            </div>
+            {/if}
+            {if !empty($GANTT_SECONDARY_FIELD_LABEL)}
+            <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:28px; height:12px; background:rgba(54,73,82,0.82); border-radius:2px;"></div>
+                <span style="white-space:nowrap;">{$GANTT_SECONDARY_FIELD_LABEL}</span>
+            </div>
+            {/if}
+        </div>
+    </div>
+    {else}
     <div id="ganttLegendPanel" style="display:none; margin-top: 10px;">
         <div class="row" style="padding: 5px;">
             <div class="col-lg-4">
@@ -251,6 +280,7 @@
             </div>
         </div>
     </div>
+    {/if}
     <script type="text/javascript">
         jQuery(document).ready(function($) {
             function resizeGanttWorkspace() {

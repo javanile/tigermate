@@ -40,11 +40,7 @@
 								<i data-appname="{$APP_NAME}" class="fa fa-times pull-right whiteIcon menuEditorRemoveItem" style="margin: 5%;padding-top:15px;"></i>
 								<div class="menuEditorItem menuEditorModuleItem">
 									<span class="pull-left marginRight10px marginTop5px">
-										{if $IS_CUSTOM_LINK}
-											<i class="fa fa-link marginTop5px"></i>
-										{else}
-											<img class="alignMiddle cursorDrag" src="{vimage_path('drag.png')}"/>
-										{/if}
+										<img class="alignMiddle cursorDrag" src="{vimage_path('drag.png')}"/>
 									</span>
 									{if $IS_CUSTOM_LINK}
 										{assign var='translatedModuleLabel' value=$moduleModel->get('label')}

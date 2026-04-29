@@ -21,16 +21,22 @@ Ci sono due workflow `VTDatabaseQueryTask` che eseguono query SQL a cascata:
 
 ### Workflow 33 — trigger su `ProjectTask`
 - **task_id DB:** `38` in `com_vtiger_workflowtasks`
-- **Cosa fa:** partendo dal task modificato, risale alla lavorazione (ProjectMilestone) del
-  suo tipo, riaggrega tutte le giornate, aggiorna la lavorazione, poi aggiorna il cantiere.
+- **Cosa fa:** partendo dal task modificato, risale alla lavorazione (ProjectMilestone) della
+  stessa coppia `Type + Zona Lavorazione`, aggiorna i parziali della giornata, riaggrega tutte
+  le giornate della stessa coppia, aggiorna la lavorazione, poi aggiorna il cantiere.
 - **Passi SQL:**
-  1. Legge `projectid` e `projecttasktype` del task modificato (`$_id`)
-  2. Legge dalla lavorazione corrispondente: `costo_operaio`, `prezzo_unitario`,
-     `totale_da_lavorare`, `projectmilestonedate`, `projectmilestonedeliverydate`
-  3. Aggrega le giornate dello stesso tipo → calcola `avanzamento_giornate_percentuale` (cf_914)
-  4. UPDATE su `vtiger_projectmilestonecf` (cf_867, cf_897, cf_906, cf_908, cf_910, cf_912, **cf_914**)
-  5. Somma totali di tutte le lavorazioni del progetto
-  6. UPDATE su `vtiger_projectcf` (cf_879, cf_881, cf_883)
+  1. Legge dal task modificato: `projectid`, `projecttasktype`, `cf_918`,
+     `cf_887`, `cf_893`, `cf_877`
+  2. Legge dalla lavorazione corrispondente: `cf_875`, `cf_885`, `cf_904`,
+     `projectmilestonedate`, `projectmilestonedeliverydate`, propagando nello stesso `$_row`
+     anche `numero_operai`, `spese`, `quantita_eseguita`
+  3. UPDATE della giornata su `vtiger_projecttaskcf`:
+     `cf_922 = spese + (numero_operai * costo_operaio)`
+     `cf_920 = quantita_eseguita * prezzo_unitario`
+  4. Aggrega le giornate della stessa coppia `Type + Zona Lavorazione`
+  5. UPDATE su `vtiger_projectmilestonecf` (cf_867, cf_897, cf_906, cf_908, cf_910, cf_912, **cf_914**)
+  6. Somma totali di tutte le lavorazioni del progetto
+  7. UPDATE su `vtiger_projectcf` (cf_879, cf_881, cf_883)
 
 ### Workflow 36 — trigger su `ProjectMilestone`
 - **task_id DB:** `40` in `com_vtiger_workflowtasks`
@@ -38,11 +44,14 @@ Ci sono due workflow `VTDatabaseQueryTask` che eseguono query SQL a cascata:
   la lavorazione stessa, poi aggiorna il cantiere.
 - **Passi SQL:**
   1. Legge dalla lavorazione modificata (`$_id`): `costo_operaio`, `prezzo_unitario`,
-     `totale_da_lavorare`, `projectmilestonedate`, `projectmilestonedeliverydate`
-  2. Aggrega le giornate dello stesso tipo → calcola `avanzamento_giornate_percentuale` (cf_914)
-  3. UPDATE su `vtiger_projectmilestonecf` (cf_867, cf_897, cf_906, cf_908, cf_910, cf_912, **cf_914**)
-  4. Somma totali di tutte le lavorazioni del progetto
-  5. UPDATE su `vtiger_projectcf` (cf_879, cf_881, cf_883)
+     `totale_da_lavorare`, `projectmilestonedate`, `projectmilestonedeliverydate`, `cf_916`
+  2. UPDATE di tutte le giornate della stessa coppia `Type + Zona Lavorazione`:
+     `cf_922 = spese + (numero_operai * costo_operaio)`
+     `cf_920 = quantita_eseguita * prezzo_unitario`
+  3. Aggrega le giornate della stessa coppia `Type + Zona Lavorazione`
+  4. UPDATE su `vtiger_projectmilestonecf` (cf_867, cf_897, cf_906, cf_908, cf_910, cf_912, **cf_914**)
+  5. Somma totali di tutte le lavorazioni del progetto
+  6. UPDATE su `vtiger_projectcf` (cf_879, cf_881, cf_883)
 
 ---
 
@@ -61,6 +70,17 @@ Ci sono due workflow `VTDatabaseQueryTask` che eseguono query SQL a cascata:
 | cf_910  | Avanzamento Giornate (COUNT tasks) |
 | cf_912  | Avanzamento Percentuale |
 | **cf_914** | **Avanzamento Giornate Percentuale** ← il campo nuovo |
+| cf_916  | Zona Lavorazione |
+
+### `vtiger_projecttaskcf`
+| Colonna | Label |
+|---------|-------|
+| cf_877  | Quantità Eseguita |
+| cf_887  | Numero Operai |
+| cf_893  | Spese |
+| cf_918  | Zona Lavorazione |
+| cf_920  | Totale Ricavo |
+| cf_922  | Totale Costo |
 
 ### `vtiger_projectmilestone`
 | Colonna | Label |
@@ -82,22 +102,46 @@ Ci sono due workflow `VTDatabaseQueryTask` che eseguono query SQL a cascata:
 
 ### Cosa funziona
 - Il workflow **gira correttamente dalla UI del CRM** (salvataggio manuale).
-- La milestone `id=269` ha `cf_914 = 20.00%` — prova che il meccanismo funziona.
-  (Quel valore è della vecchia formula senza `+1`; al prossimo salvataggio UI sarà corretto.)
+- La logica attuale su `medipav` usa la coppia `Type + Zona Lavorazione` sia per:
+  - conteggio giornate della lavorazione (`cf_910`)
+  - avanzamento percentuale (`cf_912`)
+  - avanzamento giornate percentuale (`cf_914`)
+  - totali costi/ricavi della lavorazione (`cf_906`, `cf_908`)
+- I parziali delle giornate non sono più dati statici: vengono rigenerati dai workflow:
+  - `ProjectTask.cf_922 = Spese + (Numero Operai * Costo Operaio lavorazione)`
+  - `ProjectTask.cf_920 = Quantità Eseguita * Prezzo Unitario lavorazione`
+- Caso validato su live:
+  - `ProjectTask 379` (`30x379`) collegata a `ProjectMilestone 377` (`29x377`)
+  - con `cf_887 = 4`, `cf_893 = 70`, `cf_877 = 600`, `cf_875 = 310`, `cf_885 = 5`
+  - i parziali corretti sono `cf_922 = 1310` e `cf_920 = 3000`
+  - i totali lavorazione corretti sono `cf_906 = 25799.85000` e `cf_908 = 37500.00000`
 - La serializzazione PHP nei workflow tasks è valida (verificata con controllo lunghezze `s:N:`).
 
 ### Cosa NON funziona / da verificare
-- **`vtc revise` non scatta i workflow** — la webservice API bypassa il sistema di hook
-  vtiger (`vtiger.entity.aftersave`). Usare `vtc revise` per testare non è valido;
-  bisogna salvare dalla UI del CRM.
+- `vtc revise` **su `ProjectMilestone`** scatta il workflow ed è affidabile per riallineare
+  giornata/lavorazione/cantiere.
+- `vtc revise` **su `ProjectTask`** scatta il workflow, ma è il punto dove si è visto il bug
+  di propagazione tra step 1 e step 3. Dopo la correzione, il dump SQL mostra il passaggio
+  corretto di `numero_operai`, `spese`, `quantita_eseguita`.
 - `cf_914` sulle milestone che non sono mai state salvate dopo l'aggiornamento del workflow
-  è ancora `NULL`. Si aggiorna al primo salvataggio dalla UI.
+  può restare `NULL` finché non passa almeno un salvataggio utile.
 
-### Prova da fare per confermare il fix
-1. Aprire una `ProjectMilestone` con `projectmilestonedate` e `projectmilestonedeliverydate`
-   compilate nel CRM (es. milestone `id=263`: 2026-04-06 → 2026-04-12, 7 giorni).
-2. Salvarla dalla UI senza modificare nulla.
-3. Verificare che `cf_914` venga aggiornato a `(giornate / 7) * 100`.
+### Bug trovato e risolto
+Nel workflow `33`, prima della fix:
+1. `Statement 1` leggeva correttamente `numero_operai`, `spese`, `quantita_eseguita`
+2. `Statement 2` sovrascriveva `$_row` senza riportare quei tre valori
+3. `Statement 3` vedeva le chiavi mancanti e il motore le sostituiva con `0`
+4. Risultato: `cf_920 = 0`, `cf_922 = 0`, e i totali della lavorazione/cantiere scendevano
+
+Fix applicata:
+1. Nel `Statement 2` sono stati propagati:
+   - `numero_operai`
+   - `spese`
+   - `quantita_eseguita`
+2. Il dump successivo ha mostrato:
+   - `cf_922 = 70 + (4 * 310) = 1310`
+   - `cf_920 = 600 * 5 = 3000`
+3. Gli UPDATE finali su lavorazione e cantiere sono tornati corretti (`Righe interessate: 1`)
 
 ---
 
@@ -163,8 +207,37 @@ CRM=medipav vtc inspect db query "SELECT id, name FROM vtiger_ws_entity WHERE na
 ### Trigger manuale di un workflow (solo per test — non scatta i workflow reali)
 ```bash
 CRM=medipav vtc revise ProjectMilestone '{"id":"29x269","projectmilestonedate":"2026-04-14"}'
-# ATTENZIONE: vtc revise bypassa i workflow hook vtiger. Non usarlo per testare cf_914.
 ```
+
+### Strumenti remoti usati davvero in questa sessione
+```bash
+# Lettura DB live
+CRM=medipav vtc inspect db tables
+CRM=medipav vtc inspect db columns vtiger_projecttaskcf
+CRM=medipav vtc inspect db query "SELECT ..."
+
+# Scrittura diretta DB live
+CRM=medipav vtc control db execute "UPDATE ..."
+
+# Salvataggio record via webservice
+CRM=medipav vtc revise ProjectMilestone '{"id":"29x377","cf_875":"310.00000"}'
+CRM=medipav vtc revise ProjectTask '{"id":"30x379","cf_893":"70.00000"}'
+```
+
+### Come ripartire da qui
+1. Per ispezionare i workflow live:
+   `CRM=medipav vtc inspect db query "SELECT task_id, summary, task FROM com_vtiger_workflowtasks WHERE workflow_id IN (33,36)"`
+2. Per verificare i parziali di una giornata:
+   `CRM=medipav vtc inspect db query "SELECT cf_877, cf_887, cf_893, cf_920, cf_922 FROM vtiger_projecttaskcf WHERE projecttaskid = ..."`
+3. Per verificare i totali di una lavorazione:
+   `CRM=medipav vtc inspect db query "SELECT cf_906, cf_908, cf_910, cf_912, cf_914 FROM vtiger_projectmilestonecf WHERE projectmilestoneid = ..."`
+4. Per verificare i totali cantiere:
+   `CRM=medipav vtc inspect db query "SELECT cf_879, cf_881, cf_883 FROM vtiger_projectcf WHERE projectid = ..."`
+5. Se una giornata resta incoerente, il modo più sicuro per riallineare tutto è salvare la
+   `ProjectMilestone` collegata via UI o via:
+   `CRM=medipav vtc revise ProjectMilestone '{"id":"29x...","cf_875":"valore_attuale"}'`
+6. Se serve aggiornare di nuovo le SQL dei workflow dal repo locale:
+   `python3 contrib/update_workflow_totals.py --apply`
 
 ---
 
@@ -193,4 +266,5 @@ Per abilitare il dump di debug sul server:
 - `lib/modules/Project/models/Record.php` — rimosso clamp >100 su normalizeGanttProgressValue
 - `lib/pkg/vtiger/modules/Projects/Project/modules/Project/models/Record.php` — idem
 - `lib/modules/com_vtiger_workflow/tasks/VTDatabaseQueryTask.inc` — handler workflow SQL
+- `contrib/update_workflow_totals.py` — helper locale per rigenerare e applicare le SQL dei workflow 33/36
 - Workflow DB task_id=38 (wf 33) e task_id=40 (wf 36) — aggiornati via UNHEX su medipav

@@ -134,6 +134,15 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$viewer->assign('USER_DATE_FORMAT', $currentUserModel->get('date_format'));
 		$viewer->assign('STATUS_FIELD_MODEL', Vtiger_Field_Model::getInstance('projecttaskstatus', $projectTaskModel));
 		$viewer->assign('GANTT_DISPLAY_MODE', $displayMode);
+		$viewer->assign('CRM_FLAVOR', getenv('TM_FLAVOR'));
+		$ganttSettings = Settings_Vtiger_GanttConfig_Model::getStoredSettings();
+		$milestoneFieldOptions = Settings_Vtiger_GanttConfig_Model::getPercentageFieldOptions('ProjectMilestone');
+		$primaryFieldName = $ganttSettings[Settings_Vtiger_GanttConfig_Model::MILESTONE_PRIMARY_PROGRESS_FIELD_KEY];
+		$secondaryFieldName = $ganttSettings[Settings_Vtiger_GanttConfig_Model::MILESTONE_SECONDARY_PROGRESS_FIELD_KEY];
+		$primaryFieldLabel = ($primaryFieldName !== Settings_Vtiger_GanttConfig_Model::NONE_FIELD_VALUE && isset($milestoneFieldOptions[$primaryFieldName])) ? $milestoneFieldOptions[$primaryFieldName] : '';
+		$secondaryFieldLabel = ($secondaryFieldName !== Settings_Vtiger_GanttConfig_Model::NONE_FIELD_VALUE && isset($milestoneFieldOptions[$secondaryFieldName])) ? $milestoneFieldOptions[$secondaryFieldName] : '';
+		$viewer->assign('GANTT_PRIMARY_FIELD_LABEL', $primaryFieldLabel);
+		$viewer->assign('GANTT_SECONDARY_FIELD_LABEL', $secondaryFieldLabel);
 
 		return $viewer->view('ShowChart.tpl', $moduleName, 'true');
 	}
