@@ -89,6 +89,12 @@ class Settings_MenuEditor_Module_Model extends Settings_Vtiger_Module_Model {
 
 		foreach ($modules as $appname => $appEntries) {
 			uasort($appEntries, function($left, $right) {
+				$leftIsCustom = method_exists($left, 'isCustomLink') && $left->isCustomLink();
+				$rightIsCustom = method_exists($right, 'isCustomLink') && $right->isCustomLink();
+				if ($leftIsCustom !== $rightIsCustom) {
+					return $leftIsCustom ? 1 : -1;
+				}
+
 				$leftSequence = (int) $left->get('app2tab_sequence');
 				$rightSequence = (int) $right->get('app2tab_sequence');
 				if ($leftSequence === $rightSequence) {
