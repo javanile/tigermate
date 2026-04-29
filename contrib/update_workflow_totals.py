@@ -100,7 +100,12 @@ SELECT
 -- Aggiorna i parziali sulla giornata modificata
 UPDATE vtiger_projecttaskcf
 SET cf_922 = COALESCE('$_row[spese]', 0) + (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0)),
-    cf_920 = COALESCE('$_row[quantita_eseguita]', 0) * COALESCE('$_row[prezzo_unitario]', 0)
+    cf_920 = COALESCE('$_row[quantita_eseguita]', 0) * COALESCE('$_row[prezzo_unitario]', 0),
+    cf_926 = (
+      COALESCE('$_row[quantita_eseguita]', 0) * COALESCE('$_row[prezzo_unitario]', 0)
+    ) - (
+      COALESCE('$_row[spese]', 0) + (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0))
+    )
 WHERE projecttaskid = $_id;
 
 -- Ricalcola i totali della lavorazione partendo dalle giornate dello stesso tipo e zona
@@ -135,6 +140,7 @@ SET cf_867 = $_row[avanzamento],
     cf_897 = $_row[totale_spese],
     cf_906 = $_row[totale_costi],
     cf_908 = $_row[totale_ricavi],
+    cf_928 = $_row[totale_ricavi] - $_row[totale_costi],
     cf_910 = $_row[avanzamento_giornate],
     cf_912 = $_row[avanzamento_percentuale],
     cf_914 = $_row[avanzamento_giornate_percentuale]
@@ -177,7 +183,12 @@ UPDATE vtiger_projecttaskcf ptcf
 INNER JOIN vtiger_projecttask pt ON pt.projecttaskid = ptcf.projecttaskid
 INNER JOIN vtiger_crmentity e ON e.crmid = pt.projecttaskid
 SET ptcf.cf_922 = COALESCE(ptcf.cf_893, 0) + (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0)),
-    ptcf.cf_920 = COALESCE(ptcf.cf_877, 0) * COALESCE('$_row[prezzo_unitario]', 0)
+    ptcf.cf_920 = COALESCE(ptcf.cf_877, 0) * COALESCE('$_row[prezzo_unitario]', 0),
+    ptcf.cf_926 = (
+      COALESCE(ptcf.cf_877, 0) * COALESCE('$_row[prezzo_unitario]', 0)
+    ) - (
+      COALESCE(ptcf.cf_893, 0) + (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0))
+    )
 WHERE pt.projectid = '$_row[projectid]'
   AND pt.projecttasktype = '$_row[projectmilestonetype]'
   AND IFNULL(NULLIF(ptcf.cf_918, ''), '__EMPTY__') = '$_row[zona_lavorazione_key]'
@@ -215,6 +226,7 @@ SET cf_867 = $_row[avanzamento],
     cf_897 = $_row[totale_spese],
     cf_906 = $_row[totale_costi],
     cf_908 = $_row[totale_ricavi],
+    cf_928 = $_row[totale_ricavi] - $_row[totale_costi],
     cf_910 = $_row[avanzamento_giornate],
     cf_912 = $_row[avanzamento_percentuale],
     cf_914 = $_row[avanzamento_giornate_percentuale]
