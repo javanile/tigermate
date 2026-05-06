@@ -16,6 +16,8 @@ SELECT
   pt.projecttasktype,
   IFNULL(NULLIF(ptcf.cf_918, ''), '__EMPTY__') AS zona_lavorazione_key,
   COALESCE(ptcf.cf_887, 0) AS numero_operai,
+  COALESCE(ptcf.cf_934, 0) AS numero_assistenti,
+  IFNULL(ptcf.cf_930, '0') AS mezza_giornata,
   COALESCE(ptcf.cf_893, 0) AS spese,
   COALESCE(ptcf.cf_877, 0) AS quantita_eseguita
 FROM vtiger_projecttask pt
@@ -28,6 +30,8 @@ SELECT
   '$_row[projecttasktype]' AS projecttasktype,
   '$_row[zona_lavorazione_key]' AS zona_lavorazione_key,
   '$_row[numero_operai]' AS numero_operai,
+  '$_row[numero_assistenti]' AS numero_assistenti,
+  '$_row[mezza_giornata]' AS mezza_giornata,
   '$_row[spese]' AS spese,
   '$_row[quantita_eseguita]' AS quantita_eseguita,
   COALESCE((
@@ -52,6 +56,17 @@ SELECT
       AND e.deleted = 0
     LIMIT 1
   ), 0) AS costo_operaio,
+  COALESCE((
+    SELECT pmcf.cf_932
+    FROM vtiger_projectmilestone m
+    INNER JOIN vtiger_crmentity e ON e.crmid = m.projectmilestoneid
+    INNER JOIN vtiger_projectmilestonecf pmcf ON pmcf.projectmilestoneid = m.projectmilestoneid
+    WHERE m.projectid = '$_row[projectid]'
+      AND m.projectmilestonetype = '$_row[projecttasktype]'
+      AND IFNULL(NULLIF(pmcf.cf_916, ''), '__EMPTY__') = '$_row[zona_lavorazione_key]'
+      AND e.deleted = 0
+    LIMIT 1
+  ), 0) AS costo_assistente,
   COALESCE((
     SELECT pmcf.cf_885
     FROM vtiger_projectmilestone m
@@ -99,12 +114,18 @@ SELECT
 
 -- Aggiorna i parziali sulla giornata modificata
 UPDATE vtiger_projecttaskcf
-SET cf_922 = COALESCE('$_row[spese]', 0) + (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0)),
+SET cf_922 = COALESCE('$_row[spese]', 0) + (
+      (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0))
+      + (COALESCE('$_row[numero_assistenti]', 0) * COALESCE('$_row[costo_assistente]', 0))
+    ) * IF('$_row[mezza_giornata]' = '1', 0.5, 1),
     cf_920 = COALESCE('$_row[quantita_eseguita]', 0) * COALESCE('$_row[prezzo_unitario]', 0),
     cf_926 = (
       COALESCE('$_row[quantita_eseguita]', 0) * COALESCE('$_row[prezzo_unitario]', 0)
     ) - (
-      COALESCE('$_row[spese]', 0) + (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0))
+      COALESCE('$_row[spese]', 0) + (
+        (COALESCE('$_row[numero_operai]', 0) * COALESCE('$_row[costo_operaio]', 0))
+        + (COALESCE('$_row[numero_assistenti]', 0) * COALESCE('$_row[costo_assistente]', 0))
+      ) * IF('$_row[mezza_giornata]' = '1', 0.5, 1)
     )
 WHERE projecttaskid = $_id;
 
@@ -170,6 +191,7 @@ SELECT
   pm.projectmilestonetype,
   IFNULL(NULLIF(pmcf.cf_916, ''), '__EMPTY__') AS zona_lavorazione_key,
   COALESCE(pmcf.cf_875, 0) AS costo_operaio,
+  COALESCE(pmcf.cf_932, 0) AS costo_assistente,
   COALESCE(pmcf.cf_885, 0) AS prezzo_unitario,
   COALESCE(pmcf.cf_904, 0) AS totale_da_lavorare,
   pm.projectmilestonedate,
@@ -182,12 +204,18 @@ WHERE pm.projectmilestoneid = $_id;
 UPDATE vtiger_projecttaskcf ptcf
 INNER JOIN vtiger_projecttask pt ON pt.projecttaskid = ptcf.projecttaskid
 INNER JOIN vtiger_crmentity e ON e.crmid = pt.projecttaskid
-SET ptcf.cf_922 = COALESCE(ptcf.cf_893, 0) + (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0)),
+SET ptcf.cf_922 = COALESCE(ptcf.cf_893, 0) + (
+      (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0))
+      + (COALESCE(ptcf.cf_934, 0) * COALESCE('$_row[costo_assistente]', 0))
+    ) * IF(IFNULL(ptcf.cf_930, '0') = '1', 0.5, 1),
     ptcf.cf_920 = COALESCE(ptcf.cf_877, 0) * COALESCE('$_row[prezzo_unitario]', 0),
     ptcf.cf_926 = (
       COALESCE(ptcf.cf_877, 0) * COALESCE('$_row[prezzo_unitario]', 0)
     ) - (
-      COALESCE(ptcf.cf_893, 0) + (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0))
+      COALESCE(ptcf.cf_893, 0) + (
+        (COALESCE(ptcf.cf_887, 0) * COALESCE('$_row[costo_operaio]', 0))
+        + (COALESCE(ptcf.cf_934, 0) * COALESCE('$_row[costo_assistente]', 0))
+      ) * IF(IFNULL(ptcf.cf_930, '0') = '1', 0.5, 1)
     )
 WHERE pt.projectid = '$_row[projectid]'
   AND pt.projecttasktype = '$_row[projectmilestonetype]'
