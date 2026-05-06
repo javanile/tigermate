@@ -370,6 +370,48 @@ if (!Vtiger_Utils::CheckTable('vtiger_report_sharerole')) {
     echo "Table vtiger_report_sharerole already exists\n";
 }
 
+// Fix: picklist values added via sync were missing vtiger_role2picklist entries (roles not propagated).
+// Detects all values with presence=1 that have no role assigned at all, then assigns all roles
+// already in use for that picklist. Works for any picklist that may have the same problem.
+$r2p_picklists_res = $adb->pquery('SELECT picklistid, name FROM vtiger_picklist', array());
+for ($pi = 0; $pi < $adb->num_rows($r2p_picklists_res); $pi++) {
+    $r2p_picklistid = (int) $adb->query_result($r2p_picklists_res, $pi, 'picklistid');
+    $r2p_fieldname  = $adb->query_result($r2p_picklists_res, $pi, 'name');
+    $r2p_table = 'vtiger_' . $r2p_fieldname;
+    if (!Vtiger_Utils::CheckTable($r2p_table)) {
+        continue;
+    }
+    $r2p_has_pv = $adb->pquery("SHOW COLUMNS FROM `$r2p_table` LIKE 'picklist_valueid'", array());
+    if ($adb->num_rows($r2p_has_pv) == 0) {
+        continue;
+    }
+    $r2p_roles_res = $adb->pquery('SELECT DISTINCT roleid FROM vtiger_role2picklist WHERE picklistid = ?', array($r2p_picklistid));
+    if ($adb->num_rows($r2p_roles_res) == 0) {
+        continue;
+    }
+    $r2p_roles = array();
+    for ($i = 0; $i < $adb->num_rows($r2p_roles_res); $i++) {
+        $r2p_roles[] = $adb->query_result($r2p_roles_res, $i, 'roleid');
+    }
+    $r2p_missing_res = $adb->pquery(
+        "SELECT p.picklist_valueid FROM `$r2p_table` p WHERE p.presence = 1 AND NOT EXISTS (SELECT 1 FROM vtiger_role2picklist r WHERE r.picklistvalueid = p.picklist_valueid)",
+        array()
+    );
+    $r2p_fixed = 0;
+    for ($i = 0; $i < $adb->num_rows($r2p_missing_res); $i++) {
+        $pvid = (int) $adb->query_result($r2p_missing_res, $i, 'picklist_valueid');
+        foreach ($r2p_roles as $roleid) {
+            $sortid_res = $adb->pquery('SELECT COALESCE(MAX(sortid),0)+1 AS s FROM vtiger_role2picklist WHERE roleid = ? AND picklistid = ?', array($roleid, $r2p_picklistid));
+            $sortid = (int) $adb->query_result($sortid_res, 0, 's');
+            $adb->pquery('INSERT INTO vtiger_role2picklist (roleid, picklistvalueid, picklistid, sortid) VALUES (?,?,?,?)', array($roleid, $pvid, $r2p_picklistid, $sortid));
+            $r2p_fixed++;
+        }
+    }
+    if ($r2p_fixed > 0) {
+        echo "Fixed vtiger_role2picklist for $r2p_fieldname: $r2p_fixed entries added\n";
+    }
+}
+
 if (!Vtiger_Utils::CheckTable('vtiger_report_sharers')) {
     Vtiger_Utils::CreateTable('vtiger_report_sharers',
         '(`reportid` int(25) NOT NULL,

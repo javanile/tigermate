@@ -721,6 +721,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 			$targetFieldName = $targetFieldModel->getName();
 			$targetModuleName = self::getModuleNameByFieldId($linkedFieldId);
 			$targetEntries = $this->getPicklistEntriesByValue($targetFieldName);
+			$targetPicklistRoles = $this->getRolesForPicklistField($targetFieldName);
 			$targetSequence = array();
 			$position = 1;
 			$addedValues = array();
@@ -728,7 +729,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 			foreach ($sourceEntries as $sourceEntry) {
 				$value = $sourceEntry['value'];
 				if (!isset($targetEntries[$value])) {
-					$this->addPickListValues($targetFieldModel, $value, array(), $sourceEntry['color']);
+					$this->addPickListValues($targetFieldModel, $value, $targetPicklistRoles, $sourceEntry['color']);
 					$addedValues[] = $value;
 					$targetEntries = $this->getPicklistEntriesByValue($targetFieldName);
 				}
@@ -749,6 +750,19 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 				$this->updateSequence($targetFieldName, $targetSequence);
 			}
 		}
+	}
+
+	protected function getRolesForPicklistField($fieldName) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT DISTINCT r.roleid FROM vtiger_role2picklist r JOIN vtiger_picklist p ON p.picklistid = r.picklistid WHERE p.name = ?',
+			array($fieldName)
+		);
+		$roles = array();
+		for ($i = 0; $i < $db->num_rows($result); $i++) {
+			$roles[] = $db->query_result($result, $i, 'roleid');
+		}
+		return $roles;
 	}
 
 	public function syncAddedValues($sourceFieldId, $newValues, $rolesSelected = array(), $color = '') {
