@@ -333,3 +333,51 @@ ensureWebserviceOperation('control', 'include/Webservices/Control.php', 'vtws_co
     'encoding' => 'string',
     'transaction' => 'string',
 ));
+
+if (!Vtiger_Utils::CheckTable('vtiger_report_shareusers')) {
+    Vtiger_Utils::CreateTable('vtiger_report_shareusers',
+        '(`reportid` int(25) NOT NULL,
+        `userid` int(25) NOT NULL,
+        KEY `vtiger_report_shareusers_ibfk_1` (`reportid`),
+        CONSTRAINT `vtiger_reports_reportid_ibfk_1` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
+        CONSTRAINT `vtiger_users_userid_ibfk_1` FOREIGN KEY (`userid`) REFERENCES `vtiger_users` (`id`) ON DELETE CASCADE)', true);
+    echo "Created table: vtiger_report_shareusers\n";
+} else {
+    echo "Table vtiger_report_shareusers already exists\n";
+}
+
+if (!Vtiger_Utils::CheckTable('vtiger_report_sharegroups')) {
+    Vtiger_Utils::CreateTable('vtiger_report_sharegroups',
+        '(`reportid` int(25) NOT NULL,
+        `groupid` int(25) NOT NULL,
+        KEY `vtiger_report_sharegroups_ibfk_1` (`reportid`),
+        CONSTRAINT `vtiger_report_reportid_ibfk_2` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
+        CONSTRAINT `vtiger_groups_groupid_ibfk_1` FOREIGN KEY (`groupid`) REFERENCES `vtiger_groups` (`groupid`) ON DELETE CASCADE)', true);
+    echo "Created table: vtiger_report_sharegroups\n";
+} else {
+    echo "Table vtiger_report_sharegroups already exists\n";
+}
+
+if (!Vtiger_Utils::CheckTable('vtiger_report_sharerole')) {
+    Vtiger_Utils::CreateTable('vtiger_report_sharerole',
+        '(`reportid` int(25) NOT NULL,
+        `roleid` varchar(255) NOT NULL,
+        KEY `vtiger_report_sharerole_ibfk_1` (`reportid`),
+        CONSTRAINT `vtiger_report_reportid_ibfk_3` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
+        CONSTRAINT `vtiger_role_roleid_ibfk_1` FOREIGN KEY (`roleid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE)', true);
+    echo "Created table: vtiger_report_sharerole\n";
+} else {
+    echo "Table vtiger_report_sharerole already exists\n";
+}
+
+if (!Vtiger_Utils::CheckTable('vtiger_report_sharers')) {
+    Vtiger_Utils::CreateTable('vtiger_report_sharers',
+        '(`reportid` int(25) NOT NULL,
+        `rsid` varchar(255) NOT NULL,
+        KEY `vtiger_report_sharers_ibfk_1` (`reportid`),
+        CONSTRAINT `vtiger_report_reportid_ibfk_4` FOREIGN KEY (`reportid`) REFERENCES `vtiger_report` (`reportid`) ON DELETE CASCADE,
+        CONSTRAINT `vtiger_rolesd_rsid_ibfk_1` FOREIGN KEY (`rsid`) REFERENCES `vtiger_role` (`roleid`) ON DELETE CASCADE)', true);
+    echo "Created table: vtiger_report_sharers\n";
+} else {
+    echo "Table vtiger_report_sharers already exists\n";
+}
