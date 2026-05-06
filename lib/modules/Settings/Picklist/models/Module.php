@@ -841,6 +841,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 				continue;
 			}
 
+			$targetModuleName = self::getModuleNameByFieldId($linkedFieldId);
 			$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
 			$deleteIds = array();
 			foreach ((array) $deletedValues as $deletedValue) {
@@ -854,17 +855,12 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 			}
 
 			if (!isset($targetEntries[$replaceValue])) {
-				$this->addPickListValues($targetFieldModel, $replaceValue, array(), $replaceColor);
-				$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), array($replaceValue), array(), 'add');
-				$targetEntries = $this->getPicklistEntriesByValue($targetFieldModel->getName());
-			}
-
-			if (!isset($targetEntries[$replaceValue])) {
 				continue;
 			}
 
-			$this->remove($targetFieldModel->getName(), $deleteIds, array($targetEntries[$replaceValue]['id']), self::getModuleNameByFieldId($linkedFieldId));
-			$this->handleLabels(self::getModuleNameByFieldId($linkedFieldId), array(), $deletedValues, 'delete');
+			$targetModuleModel = Settings_Picklist_Module_Model::getInstance($targetModuleName);
+			$targetModuleModel->remove($targetFieldModel->getName(), $deleteIds, array($targetEntries[$replaceValue]['id']), $targetModuleName);
+			$this->handleLabels($targetModuleName, array(), $deletedValues, 'delete');
 		}
 	}
 
