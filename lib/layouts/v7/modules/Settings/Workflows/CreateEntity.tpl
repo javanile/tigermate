@@ -17,6 +17,25 @@
 			<button type="button" class="btn btn-default" id="addFieldBtn">{vtranslate('LBL_ADD_FIELD',$QUALIFIED_MODULE)}</button>
 		</div><br>
 		{assign var=RELATED_MODULE_MODEL value=Vtiger_Module_Model::getInstance($TASK_OBJECT->entity_type)}
+		<div style="margin-bottom:12px;">
+			<label style="font-weight:normal;cursor:pointer;">
+				<input type="checkbox" id="upsertEnabledCheck" value="1"
+				       {if $TASK_OBJECT->upsert_key_field}checked="checked"{/if}
+				       onchange="jQuery('#upsertKeyWrapper').toggle(this.checked); if(!this.checked) jQuery('#upsertKeySelect').val('');" />
+				&nbsp;Aggiorna se già esiste
+			</label>
+			<span id="upsertKeyWrapper" style="margin-left:12px;{if !$TASK_OBJECT->upsert_key_field}display:none;{/if}">
+				campo chiave:&nbsp;
+				<select name="upsert_key_field" id="upsertKeySelect" style="min-width:200px;">
+					<option value="">--</option>
+					{foreach from=$RELATED_MODULE_MODEL->getFields() item=UFM}
+						<option value="{$UFM->get('name')}" {if $TASK_OBJECT->upsert_key_field eq $UFM->get('name')}selected="selected"{/if}>
+							{vtranslate($UFM->get('label'), $UFM->getModuleName())}
+						</option>
+					{/foreach}
+				</select>
+			</span>
+		</div>
 		{assign var=FIELD_VALUE_MAPPING value=ZEND_JSON::decode($TASK_OBJECT->field_value_mapping)}
 		{foreach from=$FIELD_VALUE_MAPPING item=FIELD_MAP}
 			{assign var=SELECTED_FIELD_MODEL value=$RELATED_MODULE_MODEL->getField($FIELD_MAP['fieldname'])}

@@ -17,7 +17,7 @@ class VTCreateEntityTask extends VTTask {
 	private $referenceFieldFocusList = array();
 
 	public function getFieldNames() {
-		return array('entity_type', 'reference_field', 'field_value_mapping');
+		return array('entity_type', 'reference_field', 'field_value_mapping', 'upsert_key_field');
 	}
 
 	public function doTask($entity) {
@@ -186,6 +186,24 @@ class VTCreateEntityTask extends VTTask {
 
 				$newEntity->column_fields[$fieldName] = $fieldValue;
 			}
+			// Upsert: se upsert_key_field è configurato, cerca un record esistente e aggiornalo
+			if (!empty($this->upsert_key_field)) {
+				$keyValue = $newEntity->column_fields[$this->upsert_key_field];
+				if (!empty($keyValue)) {
+					$existingId = $this->findExistingRecord($entityType, $this->upsert_key_field, $keyValue);
+					if (!empty($existingId)) {
+						$resolvedFields = $newEntity->column_fields;
+						$newEntity = CRMEntity::getInstance($entityType);
+						$newEntity->id = $existingId;
+						$newEntity->mode = 'edit';
+						$newEntity->retrieve_entity_info($existingId, $entityType);
+						foreach ($resolvedFields as $fname => $fvalue) {
+							$newEntity->column_fields[$fname] = $fvalue;
+						}
+					}
+				}
+			}
+
 			$newEntity->column_fields[$this->reference_field] = $focus->id;
 			// To handle cyclic process
 			$newEntity->_from_workflow = true;
@@ -214,6 +232,25 @@ class VTCreateEntityTask extends VTTask {
 		}
 
 		$util->revertUser();
+	}
+
+	private function findExistingRecord($moduleName, $fieldName, $fieldValue) {
+		global $adb;
+		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+		$fieldModel = $moduleModel->getField($fieldName);
+		if (!$fieldModel) return null;
+		$column = $fieldModel->get('column');
+		$table = $fieldModel->get('table');
+		$moduleId = strtolower($moduleName) . 'id';
+		$sql = "SELECT vtiger_crmentity.crmid FROM vtiger_crmentity
+		        INNER JOIN {$table} ON vtiger_crmentity.crmid = {$table}.{$moduleId}
+		        WHERE vtiger_crmentity.deleted = 0 AND {$table}.{$column} = ?
+		        LIMIT 1";
+		$result = $adb->pquery($sql, [$fieldValue]);
+		if ($result && $adb->num_rows($result) > 0) {
+			return $adb->query_result($result, 0, 'crmid');
+		}
+		return null;
 	}
 
 	public function getReferenceFieldFocus($referencedModule,$referenceField,$referenceRecordId){
