@@ -77,6 +77,7 @@ class Settings_Vtiger_CompanyDetailsSave_Action extends Settings_Vtiger_Basic_Ac
 				}
 			}
 			$moduleModel->save();
+			$moduleModel->syncSelfAccount();
 
 			if (!empty($_FILES['favicon']['name'])) {
 				$favDetails = $_FILES['favicon'];

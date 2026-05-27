@@ -19,6 +19,15 @@ $adb->setDieOnError(true);
 
 echo "Checking for missing tables and creating them if necessary...\n";
 
+$organizationSelfAccountColumnResult = $adb->pquery("SHOW COLUMNS FROM vtiger_organizationdetails LIKE 'self_account_id'", array());
+if ($adb->num_rows($organizationSelfAccountColumnResult) === 0) {
+    $adb->pquery("ALTER TABLE vtiger_organizationdetails ADD COLUMN self_account_id INT(19) DEFAULT NULL", array());
+    echo "Added vtiger_organizationdetails.self_account_id\n";
+} else {
+    echo "vtiger_organizationdetails.self_account_id already exists\n";
+}
+
+
 if (!Vtiger_Utils::CheckTable('vtiger_cv2role')) {
     Vtiger_Utils::CreateTable('vtiger_cv2role',
         '(`cvid` int(25) NOT NULL,

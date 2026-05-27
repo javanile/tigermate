@@ -119,6 +119,10 @@
 										><i class="fa fa-pencil" title="{vtranslate('LBL_EDIT', $MODULE)}"></i></a> &nbsp;&nbsp;
 									{/if}
 
+									{if $RELATED_MODULE_NAME eq 'ProjectTask' && $IS_CREATE_PERMITTED}
+										<a href="{$RELATED_RECORD->getEditViewUrl()}&isDuplicate=true&returnmode=showRelatedList&returntab_label={$TAB_LABEL}&returnrecord={$PARENT_RECORD->getId()}&returnmodule={$MODULE}&returnview=Detail&returnrelatedModuleName={$RELATED_MODULE_NAME}&returnrelationId={$RELATION_ID}" onclick="if(event.stopPropagation){ldelim}event.stopPropagation();{rdelim}else{ldelim}event.cancelBubble=true;{rdelim}"><i class="fa fa-copy" title="{vtranslate('LBL_DUPLICATE', $MODULE)}"></i></a> &nbsp;&nbsp;
+									{/if}
+
 									{if $IS_DELETABLE}
 										<a class="relationDelete"><i title="{vtranslate('LBL_UNLINK', $MODULE)}" class="vicon-linkopen"></i></a>
 									{/if}

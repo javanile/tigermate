@@ -331,6 +331,8 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 				}
 				$query = "$query ORDER BY $qualifiedOrderBy $sortOrder";
 			}
+		} else if(empty($orderBy) && empty($sortOrder) && $relationModuleName == "ProjectTask") {
+			$query .= ' ORDER BY vtiger_projecttask.startdate DESC, vtiger_projecttask.projecttaskid DESC';
 		} else if(empty($orderBy) && empty($sortOrder) && $relationModuleName != "Users") {
 			$query .= ' ORDER BY vtiger_crmentity.modifiedtime DESC';
 		}

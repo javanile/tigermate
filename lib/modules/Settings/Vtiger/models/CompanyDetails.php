@@ -53,6 +53,18 @@ class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model 
 		'website' => 'text',
 	);
 
+	var $selfAccountFieldMap = array(
+		'organizationname' => 'accountname',
+		'address' => 'bill_street',
+		'city' => 'bill_city',
+		'state' => 'bill_state',
+		'code' => 'bill_code',
+		'country' => 'bill_country',
+		'phone' => 'phone',
+		'fax' => 'fax',
+		'website' => 'website',
+	);
+
 	/**
 	 * Function to get Edit view Url
 	 * @return <String> Url
@@ -165,6 +177,75 @@ class Settings_Vtiger_CompanyDetails_Model extends Settings_Vtiger_Module_Model 
 			array_push($params, $db->getUniqueID($this->baseTable));
 		}
 		$db->pquery($query, $params);
+	}
+
+	public function syncSelfAccount() {
+		global $current_user;
+		if (empty($current_user)) {
+			$current_user = Users::getActiveAdminUser();
+		}
+
+		$organizationName = trim((string) $this->get('organizationname'));
+		if ($organizationName === '') {
+			return;
+		}
+
+		$db = PearDatabase::getInstance();
+		$organizationId = $this->get('id') ? $this->get('id') : $this->get('organization_id');
+		$selfAccountId = (int) $this->get('self_account_id');
+		$accountRecord = null;
+
+		if ($selfAccountId > 0 && $this->isActiveAccount($selfAccountId)) {
+			$accountRecord = Vtiger_Record_Model::getInstanceById($selfAccountId, 'Accounts');
+		} else {
+			$selfAccountId = $this->findAccountByName($organizationName);
+			if ($selfAccountId > 0) {
+				$accountRecord = Vtiger_Record_Model::getInstanceById($selfAccountId, 'Accounts');
+			}
+		}
+
+		if (!$accountRecord) {
+			$accountRecord = Vtiger_Record_Model::getCleanInstance('Accounts');
+			$currentUser = Users_Record_Model::getCurrentUserModel();
+			$currentUserId = $currentUser->getId() ? $currentUser->getId() : 1;
+			$accountRecord->set('assigned_user_id', $currentUserId);
+		}
+
+		foreach ($this->selfAccountFieldMap as $companyField => $accountField) {
+			$accountRecord->set($accountField, $this->get($companyField));
+		}
+
+		$accountRecord->save();
+		$savedAccountId = $accountRecord->getId();
+
+		if ($organizationId && $savedAccountId && (int) $this->get('self_account_id') !== (int) $savedAccountId) {
+			$db->pquery(
+				'UPDATE vtiger_organizationdetails SET self_account_id = ? WHERE organization_id = ?',
+				array($savedAccountId, $organizationId)
+			);
+			$this->set('self_account_id', $savedAccountId);
+		}
+	}
+
+	protected function isActiveAccount($accountId) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT crmid FROM vtiger_crmentity WHERE crmid = ? AND setype = ? AND deleted = 0',
+			array($accountId, 'Accounts')
+		);
+		return $db->num_rows($result) > 0;
+	}
+
+	protected function findAccountByName($accountName) {
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery(
+			'SELECT vtiger_account.accountid FROM vtiger_account INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_account.accountid WHERE vtiger_account.accountname = ? AND vtiger_crmentity.deleted = 0 ORDER BY vtiger_account.accountid ASC',
+			array($accountName)
+		);
+		if ($db->num_rows($result) > 0) {
+			return (int) $db->query_result($result, 0, 'accountid');
+		}
+		return 0;
 	}
 
 	/**
