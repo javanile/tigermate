@@ -191,7 +191,7 @@
 		{* Summary View Contacts Widget Ends Here *}
 
 		{* Summary View Contacts Widget *}
-		{if $TASKS_WIDGET_MODEL}
+		{if $TASKS_WIDGET_MODEL && $CRM_FLAVOR neq 'construction'}
 			{assign var=RELATED_MODULE_MODEL value=Vtiger_Module_Model::getInstance('ProjectTask')}
 			{assign var=PROGRESS_FIELD_MODEL value=$RELATED_MODULE_MODEL->getField('projecttaskprogress')}
 			{assign var=STATUS_FIELD_MODEL value=$RELATED_MODULE_MODEL->getField('projecttaskstatus')}

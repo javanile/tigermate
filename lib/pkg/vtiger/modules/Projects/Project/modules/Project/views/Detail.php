@@ -30,6 +30,7 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$viewer->assign('SUMMARY_RECORD_STRUCTURE', $recordStrucure->getStructure());
         $viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
 		$viewer->assign('MODULE_NAME', $moduleName);
+		$viewer->assign('CRM_FLAVOR', getenv('TM_FLAVOR'));
 
 		return $viewer->view('ModuleSummaryView.tpl', $moduleName, true);
 	}

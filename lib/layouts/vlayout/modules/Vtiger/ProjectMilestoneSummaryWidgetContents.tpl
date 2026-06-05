@@ -17,33 +17,64 @@
 			{assign var=PROJECTMILESTONE_DATE_HEADER value={vtranslate($HEADER->get('label'),$MODULE)}}
 		{/if}
 	{/foreach}
-	<div class="row-fluid">		
-		<span class="span7">
-			<strong>{$PROJECTMILESTONE_NAME_HEADER}</strong>
-		</span>
-		<span class="span4">
-			<span class="pull-right">
-				<strong>{$PROJECTMILESTONE_DATE_HEADER}</strong>
-			</span>
-		</span>
-	</div>
-	{foreach item=RELATED_RECORD from=$RELATED_RECORDS}
-		<div class="recentActivitiesContainer">
-			<ul class="unstyled">
-				<li>
-					<div class="row-fluid">
-						<span class="span7 textOverflowEllipsis">
-							<a href="{$RELATED_RECORD->getDetailViewUrl()}" id="{$MODULE}_{$RELATED_MODULE}_Related_Record_{$RELATED_RECORD->get('id')}" title="{$RELATED_RECORD->getDisplayValue('projectmilestonename')}">{$RELATED_RECORD->getDisplayValue('projectmilestonename')}</a>
-						</span>
-						<span class="span4 horizontalLeftSpacingForSummaryWidgetContents">
-							<span class="pull-right">{$RELATED_RECORD->getDisplayValue('projectmilestonedate')}</span>
-						</span>
-							
-					</div>
-				</li>
-			</ul>
+	<style type="text/css">
+		.tmProjectMilestoneSummaryTable {
+			display: table;
+			width: 100%;
+			table-layout: fixed;
+			border-collapse: collapse;
+			margin-top: 4px;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneRow {
+			display: table-row;
+		}
+		.tmProjectMilestoneSummaryTable .recentActivitiesContainer {
+			display: table-row;
+			padding: 0;
+			margin: 0;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneCell {
+			display: table-cell;
+			vertical-align: middle;
+			padding: 8px 10px;
+			border-bottom: 1px solid #e8e8e8;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneHeader .tmProjectMilestoneCell {
+			padding-top: 0;
+			padding-bottom: 7px;
+			font-weight: bold;
+			color: #555;
+			border-bottom: 1px solid #d9d9d9;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneName {
+			width: 68%;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneDate {
+			width: 32%;
+			text-align: right;
+			white-space: nowrap;
+		}
+		.tmProjectMilestoneSummaryTable .tmProjectMilestoneRecordName {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	</style>
+	<div class="tmProjectMilestoneSummaryTable">
+		<div class="tmProjectMilestoneRow tmProjectMilestoneHeader">
+			<div class="tmProjectMilestoneCell tmProjectMilestoneName">{$PROJECTMILESTONE_NAME_HEADER}</div>
+			<div class="tmProjectMilestoneCell tmProjectMilestoneDate">{$PROJECTMILESTONE_DATE_HEADER}</div>
 		</div>
-	{/foreach}
+		{foreach item=RELATED_RECORD from=$RELATED_RECORDS}
+			<div class="tmProjectMilestoneRow recentActivitiesContainer">
+				<div class="tmProjectMilestoneCell tmProjectMilestoneName">
+					<a class="tmProjectMilestoneRecordName" href="{$RELATED_RECORD->getDetailViewUrl()}" id="{$MODULE}_{$RELATED_MODULE}_Related_Record_{$RELATED_RECORD->get('id')}" title="{$RELATED_RECORD->getDisplayValue('projectmilestonename')}">{$RELATED_RECORD->getDisplayValue('projectmilestonename')}</a>
+				</div>
+				<div class="tmProjectMilestoneCell tmProjectMilestoneDate">{$RELATED_RECORD->getDisplayValue('projectmilestonedate')}</div>
+			</div>
+		{/foreach}
+	</div>
 	{assign var=NUMBER_OF_RECORDS value=php7_count($RELATED_RECORDS)}
 	{if $NUMBER_OF_RECORDS eq 5}
 		<div class="row-fluid">

@@ -124,7 +124,7 @@
 		{* Summary View MileStone Widget Ends Here*}
 
 		{* Summary View Tasks Widgte*}
-		{if $TASKS_WIDGET_MODEL}
+		{if $TASKS_WIDGET_MODEL && $CRM_FLAVOR neq 'construction'}
 			<div class="summaryWidgetContainer">
 				<div class="widgetContainer_tasks" data-url="{$TASKS_WIDGET_MODEL->getUrl()}" data-name="{$TASKS_WIDGET_MODEL->getLabel()}">
 					<div class="widget_header row-fluid">
