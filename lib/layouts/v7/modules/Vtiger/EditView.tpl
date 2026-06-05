@@ -70,6 +70,48 @@
 								<input type="hidden" name="returnparent" value="{$RETURN_PARENT_MODULE}" />
 							{/if}
 							{include file="partials/EditViewContents.tpl"|@vtemplate_path:$MODULE}
+							{if $MODULE eq 'ProjectTask'}
+								<script type="text/javascript">
+									(function () {
+										var form = jQuery('form#EditView[name="edit"]');
+										var startDate = form.find('[name="startdate"]');
+										var endDate = form.find('[name="enddate"]');
+										if (!startDate.length || !endDate.length) {
+											return;
+										}
+
+										var syncEndDate = function () {
+											var startValue = startDate.val();
+											if (!startValue) {
+												return;
+											}
+
+											var endValue = endDate.val();
+											var dateFormat = app.getDateFormat().toUpperCase();
+											var startMoment = moment(startValue, dateFormat);
+											var endMoment = moment(endValue, dateFormat);
+											if (!endValue || startMoment.unix() > endMoment.unix()) {
+												endDate.val(startValue).trigger('change');
+												window.setTimeout(function () {
+													startDate.add(endDate).removeClass('input-error');
+													if (jQuery.fn.qtip) {
+														startDate.add(endDate).each(function () {
+															var tooltip = jQuery(this).qtip('api');
+															if (tooltip) {
+																tooltip.hide();
+															}
+														});
+													}
+												}, 0);
+											}
+										};
+
+										startDate.on('change blur', syncEndDate);
+										form.on('submit', syncEndDate);
+										syncEndDate();
+									})();
+								</script>
+							{/if}
 						</div>
 					</div>
 					<div class='modal-overlay-footer clearfix'>
