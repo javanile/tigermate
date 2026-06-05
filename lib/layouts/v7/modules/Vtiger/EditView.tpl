@@ -80,35 +80,36 @@
 											return;
 										}
 
-										var syncEndDate = function () {
+										var clearStartDateTooltip = function () {
+											startDate.removeClass('input-error');
+											if (jQuery.fn.qtip) {
+												var tooltip = startDate.qtip('api');
+												if (tooltip) {
+													tooltip.destroy(true);
+												}
+											}
+											startDate.removeAttr('data-hasqtip aria-describedby');
+										};
+
+										var syncEndDateFromStartDate = function () {
 											var startValue = startDate.val();
 											if (!startValue) {
 												return;
 											}
 
 											var endValue = endDate.val();
-											var dateFormat = app.getDateFormat().toUpperCase();
+											var dateFormat = (startDate.data('dateFormat') || 'dd-mm-yyyy').toUpperCase();
 											var startMoment = moment(startValue, dateFormat);
 											var endMoment = moment(endValue, dateFormat);
 											if (!endValue || startMoment.unix() > endMoment.unix()) {
 												endDate.val(startValue).trigger('change');
-												window.setTimeout(function () {
-													startDate.add(endDate).removeClass('input-error');
-													if (jQuery.fn.qtip) {
-														startDate.add(endDate).each(function () {
-															var tooltip = jQuery(this).qtip('api');
-															if (tooltip) {
-																tooltip.hide();
-															}
-														});
-													}
-												}, 0);
+												window.setTimeout(clearStartDateTooltip, 0);
 											}
 										};
 
-										startDate.on('change blur', syncEndDate);
-										form.on('submit', syncEndDate);
-										syncEndDate();
+										startDate.on('change blur', syncEndDateFromStartDate);
+										form.on('submit', syncEndDateFromStartDate);
+										syncEndDateFromStartDate();
 									})();
 								</script>
 							{/if}
