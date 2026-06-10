@@ -204,7 +204,9 @@ class VTCreateEntityTask extends VTTask {
 				}
 			}
 
-			$newEntity->column_fields[$this->reference_field] = $focus->id;
+			if (empty($newEntity->column_fields[$this->reference_field])) {
+				$newEntity->column_fields[$this->reference_field] = $focus->id;
+			}
 			// To handle cyclic process
 			$newEntity->_from_workflow = true;
 			$newEntity->column_fields['source'] = 'WORKFLOW';
