@@ -134,7 +134,7 @@
 				<option value="none">{vtranslate('LBL_NONE',$QUALIFIED_MODULE)}</option>
 				{foreach from=$RELATED_MODULE_MODEL->getFields() item=FIELD_MODEL}
 					{assign var=FIELD_INFO value=$FIELD_MODEL->getFieldInfo()}
-					{if !$FIELD_MODEL->isMandatory() && $FIELD_MODEL->getFieldDataType() neq 'reference'}
+					{if (!$FIELD_MODEL->isMandatory() && $FIELD_MODEL->getFieldDataType() neq 'reference') || $FIELD_MODEL->get('name') eq $REFERENCE_FIELD_NAME}
 					<option value="{$FIELD_MODEL->get('name')}" data-fieldtype="{$FIELD_MODEL->getFieldType()}"  data-field-name="{$FIELD_MODEL->get('name')}" data-fieldinfo='{ZEND_JSON::encode($FIELD_INFO)}' >
 						{vtranslate($FIELD_MODEL->get('label'), $SOURCE_MODULE)}
 					</option>
