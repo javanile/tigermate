@@ -75,6 +75,25 @@
 			<div>
 				<button type="button" class="btn" id="addFieldBtn">{vtranslate('LBL_ADD_FIELD',$QUALIFIED_MODULE)}</button>
 			</div><br>
+			<div style="margin-bottom:12px;">
+				<label style="font-weight:normal;cursor:pointer;">
+					<input type="checkbox" id="upsertEnabledCheck" value="1"
+					       {if $TASK_OBJECT->upsert_key_field}checked="checked"{/if}
+					       onchange="jQuery('#upsertKeyWrapper').toggle(this.checked); if(!this.checked) jQuery('#upsertKeySelect').val('');" />
+					&nbsp;Aggiorna se già esiste
+				</label>
+				<span id="upsertKeyWrapper" style="margin-left:12px;{if !$TASK_OBJECT->upsert_key_field}display:none;{/if}">
+					campo chiave:&nbsp;
+					<select name="upsert_key_field" id="upsertKeySelect" style="min-width:200px;">
+						<option value="">--</option>
+						{foreach from=$RELATED_MODULE_MODEL->getFields() item=UFM}
+							<option value="{$UFM->get('name')}" {if $TASK_OBJECT->upsert_key_field eq $UFM->get('name')}selected="selected"{/if}>
+								{vtranslate($UFM->get('label'), $UFM->getModuleName())}
+							</option>
+						{/foreach}
+					</select>
+				</span>
+			</div>
 			{assign var=MANDATORY_FIELD_MODELS value=$RELATED_MODULE_MODEL->getMandatoryFieldModels()}
 			{foreach from=$MANDATORY_FIELD_MODELS item=MANDATORY_FIELD_MODEL}
 				{if in_array($SOURCE_MODULE, $MANDATORY_FIELD_MODEL->getReferenceList())}
