@@ -76,6 +76,9 @@ class Settings_Workflows_EditV7Task_View extends Settings_Vtiger_Index_View {
 
 				$fieldMapping = Zend_Json::decode($taskObject->field_value_mapping);
 				foreach ($fieldMapping as $key => $mappingInfo) {
+					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels) && $mappingInfo['value'] === '$source_assigned_user_id') {
+						continue;
+					}
 					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels)) {
 						if(!empty($mappingInfo['value'])){
 							if(is_numeric($mappingInfo['value'])) {

@@ -55,6 +55,9 @@ class Settings_Workflows_EditTask_View extends Settings_Vtiger_Index_View {
 
 				$fieldMapping = Zend_Json::decode($taskObject->field_value_mapping);
 				foreach ($fieldMapping as $key => $mappingInfo) {
+					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels) && $mappingInfo['value'] === '$source_assigned_user_id') {
+						continue;
+					}
 					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels)) {
                         if(!empty($mappingInfo['value']))
                             $userRecordModel = Users_Record_Model::getInstanceByName($mappingInfo['value']);
