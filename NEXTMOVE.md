@@ -338,8 +338,33 @@ I numeri NON coincidono e si accavallano (esiste `workflow_id=38` su Project E `
 
 **Cascate importanti (catene di trigger):**
 - Salvare un **Project** → wf42 crea/salva il **SalesOrder** omonimo → scatta **wf43** sul SalesOrder.
-- Quindi "salvo il cantiere" finisce per ricalcolare i totali via wf43. Tienine conto: i totali cantiere
-  possono essere riscritti da 3 strade diverse (wf33 da giornata, wf36 da lavorazione, wf43 da SalesOrder/Project).
+- Quindi "salvo il cantiere" finisce per ricalcolare i totali via wf43. Tienine conto: i totali cantiere possono essere riscritti da 3 strade diverse (wf33 da giornata, wf36 da lavorazione, wf43 da SalesOrder/Project).
+
+## B.1 Aggiornamento 2026-06-16 — owner dinamico nel task wf42 "Crea Bolla Materiali Cantiere"
+
+**Problema UI:** nel task `VTCreateEntityTask` del workflow 42, il campo target owner/`assigned_user_id` non apre il popup "Set Value" con Field/Expression. La UI renderizza solo una tendina utenti/gruppi, quindi non era possibile mappare dinamicamente l'assegnatario del SalesOrder all'assegnatario del Project sorgente.
+
+**Soluzione a basso impatto adottata:** aggiunta una sentinella rawtext `$source_assigned_user_id` nella tendina owner, con label `» Assegnatario del record sorgente`. In esecuzione il task riconosce la sentinella e la sostituisce con `assigned_user_id` del record che ha scatenato il workflow.
+
+**File/punti coinvolti:**
+- `lib/layouts/v7/modules/Settings/Workflows/resources/Edit.js` — aggiunge l'opzione sentinella nella UI owner del Create Entity task.
+- `lib/layouts/vlayout/modules/Settings/Workflows/resources/Edit3.js` — gemello legacy allineato; `vlayout/resources/Edit.js` NON e' il punto equivalente per questa UI.
+- `lib/modules/com_vtiger_workflow/tasks/VTCreateEntityTask.inc` — risolve `$source_assigned_user_id` in `$focus->column_fields['assigned_user_id']` prima della normale gestione owner.
+- `lib/modules/Settings/Workflows/actions/TaskAjax.php` — in salvataggio lascia invariata la sentinella, saltando la conversione owner ID -> nome utente/gruppo.
+- `lib/modules/Settings/Workflows/views/EditTask.php` e `EditV7Task.php` — in riapertura lasciano invariata la sentinella, saltando la conversione owner nome/ID.
+
+**Errori incontrati e causa:**
+- Salvataggio task: fatal su `TaskAjax.php` (`getName()` su null). Causa: `$source_assigned_user_id` veniva trattato come ID gruppo.
+- Riapertura task: fatal su `EditTask.php` (`getId()` su null). Causa analoga: la sentinella veniva trattata come owner reale da convertire.
+- Warning `ConfigReader.php` su `modules/com_vtiger_workflow/config.inc`, `Workflow::$schmonth`, `TaskRecord.php` array key/task_type: osservati durante debug, ma non causati dalla sentinella; sembrano rumore/preesistenti.
+
+**Regole per future modifiche:**
+- Non trasformare `$source_assigned_user_id` in ID/nome durante save/open: deve restare rawtext nel `field_value_mapping`.
+- La conversione va fatta solo a runtime in `VTCreateEntityTask.inc`, quando esiste il record sorgente (`$focus`).
+- Se si tocca la UI v7 del Create Entity task, controllare sempre anche `vlayout/resources/Edit3.js` come gemello legacy.
+- Tenere il patch minimale: niente refactoring del sistema owner/workflow.
+
+**Verifica manuale consigliata:** aprire il task 48 del workflow 42, scegliere `» Assegnatario del record sorgente` su `assigned_user_id`, salvare, riaprire la modale e verificare che la voce resti selezionata. Poi salvare un Project con assegnatario diverso e verificare che il SalesOrder creato/upsertato erediti lo stesso owner.
 
 ## C. Formula STANDARD dei totali cantiere (replicata IDENTICA in wf33/36/43)
 L'UPDATE finale su `vtiger_projectcf` deve essere lo stesso nei 3 workflow:
