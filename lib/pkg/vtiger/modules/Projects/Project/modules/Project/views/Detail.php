@@ -54,7 +54,9 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$request->set('record', $salesOrderId);
 		$request->set('requestMode', 'full');
 		// Keep the originating Project id so the line items template can build the "Aggiungi Materiali" button.
+		// Set it on $_REQUEST too: the template reads {$smarty.request.materialsProjectId} (= $_REQUEST), not the request object.
 		$request->set('materialsProjectId', $projectId);
+		$_REQUEST['materialsProjectId'] = $projectId;
 
 		$salesOrderViewClass = Vtiger_Loader::getComponentClassName('View', 'Detail', 'SalesOrder');
 		$salesOrderDetailView = new $salesOrderViewClass();
