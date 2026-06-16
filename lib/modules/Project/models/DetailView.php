@@ -98,6 +98,30 @@ class Project_DetailView_Model extends Vtiger_DetailView_Model {
 			'linkicon' => ''
 			);
 
+		// Construction flavor: show a "Materiali" tab when a SalesOrder shares the project title.
+		if (getenv('TM_FLAVOR') === 'construction') {
+			$userPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+			$salesOrderInstance = Vtiger_Module_Model::getInstance('SalesOrder');
+			$hasAccess = $userPrivilegesModel->hasModulePermission($salesOrderInstance->getId())
+				&& $userPrivilegesModel->hasModuleActionPermission($salesOrderInstance->getId(), 'DetailView');
+			if ($hasAccess) {
+				$db = PearDatabase::getInstance();
+				$result = $db->pquery('SELECT vtiger_salesorder.salesorderid
+					FROM vtiger_salesorder
+					INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_salesorder.salesorderid
+					WHERE vtiger_crmentity.deleted = 0 AND vtiger_salesorder.subject = ?
+					ORDER BY vtiger_salesorder.salesorderid DESC LIMIT 1', array($recordModel->get('projectname')));
+				if ($db->num_rows($result) > 0) {
+					$relatedLinks[] = array(
+						'linktype' => 'DETAILVIEWTAB',
+						'linklabel' => 'Materiali',
+						'linkurl' => $recordModel->getDetailViewUrl().'&mode=showMaterials',
+						'linkicon' => ''
+						);
+				}
+			}
+		}
+
 		return $relatedLinks;
 	}
 }
