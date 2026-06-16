@@ -153,6 +153,9 @@ class Settings_Workflows_TaskAjax_Action extends Settings_Vtiger_IndexAjax_View 
 
 				$fieldMapping = Zend_Json::decode($taskObject->field_value_mapping);
 				foreach ($fieldMapping as $key => $mappingInfo) {
+					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels) && $mappingInfo['value'] === '$source_assigned_user_id') {
+						continue;
+					}
 					if (array_key_exists($mappingInfo['fieldname'], $ownerFieldModels)) {
 						$userRecordModel = Users_Record_Model::getInstanceById($mappingInfo['value'], 'Users');
 						$ownerName = $userRecordModel->get('user_name');
