@@ -150,6 +150,14 @@ class VTCreateEntityTask extends VTTask {
 					}
 				}
 
+				if (in_array($fieldName, $ownerFields) && $fieldValue === '$source_assigned_user_id') {
+					if (!empty($focus->column_fields['assigned_user_id'])) {
+						$fieldValue = $focus->column_fields['assigned_user_id'];
+					} else {
+						$fieldValue = $focus->column_fields[$fieldName];
+					}
+				}
+
 				if (in_array($fieldName, $ownerFields) && !is_numeric($fieldValue)) {
 					$userId = getUserId_Ol($fieldValue);
 					$groupId = getGrpId($fieldValue);
