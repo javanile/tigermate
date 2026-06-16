@@ -14,6 +14,51 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		parent::__construct();
 		$this->exposeMethod('showRelatedRecords');
         $this->exposeMethod('showChart');
+        $this->exposeMethod('showMaterials');
+	}
+
+	/**
+	 * Construction flavor: renders the SalesOrder (materials) detail content inside the
+	 * Project detail context. The tab url stays on module=Project but the request is
+	 * rewritten to SalesOrder so the Inventory detail view renders the real line items.
+	 * @param Vtiger_Request $request
+	 */
+	public function showMaterials(Vtiger_Request $request) {
+		if (getenv('TM_FLAVOR') !== 'construction') {
+			return '';
+		}
+
+		$projectId = $request->get('record');
+		$projectRecordModel = Vtiger_Record_Model::getInstanceById($projectId, $request->getModule());
+
+		$userPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+		$salesOrderInstance = Vtiger_Module_Model::getInstance('SalesOrder');
+		$hasAccess = $userPrivilegesModel->hasModulePermission($salesOrderInstance->getId())
+			&& $userPrivilegesModel->hasModuleActionPermission($salesOrderInstance->getId(), 'DetailView');
+		if (!$hasAccess) {
+			return '';
+		}
+
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery('SELECT vtiger_salesorder.salesorderid
+			FROM vtiger_salesorder
+			INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_salesorder.salesorderid
+			WHERE vtiger_crmentity.deleted = 0 AND vtiger_salesorder.subject = ?
+			ORDER BY vtiger_salesorder.salesorderid DESC LIMIT 1', array($projectRecordModel->get('projectname')));
+		if ($db->num_rows($result) <= 0) {
+			return '';
+		}
+		$salesOrderId = $db->query_result($result, 0, 'salesorderid');
+
+		$request->set('module', 'SalesOrder');
+		$request->set('record', $salesOrderId);
+		$request->set('requestMode', 'full');
+		// Keep the originating Project id so the line items template can build the "Aggiungi Materiali" button.
+		$request->set('materialsProjectId', $projectId);
+
+		$salesOrderViewClass = Vtiger_Loader::getComponentClassName('View', 'Detail', 'SalesOrder');
+		$salesOrderDetailView = new $salesOrderViewClass();
+		return $salesOrderDetailView->showDetailViewByMode($request);
 	}
 
 	public function showModuleSummaryView($request) {

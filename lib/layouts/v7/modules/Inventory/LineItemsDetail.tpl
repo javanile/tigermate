@@ -74,6 +74,15 @@
 
 {assign var=FINAL_DETAILS value=$RELATED_PRODUCTS.1.final_details}
 <div class="details block">
+    {* Construction flavor: shown only when the SalesOrder detail is rendered inside the Project "Materiali" tab *}
+    {if $smarty.request.mode eq 'showMaterials' && $smarty.request.materialsProjectId}
+        {assign var=MATERIALS_RETURN_TAB value="`vtranslate('SINGLE_Project','Project')` Materiali"}
+        <div class="lineItemTableDiv" style="margin-top:15px;text-align:right;">
+            <a class="btn btn-success addMaterialsButton" href="index.php?module=SalesOrder&view=Edit&record={$RECORD->getId()}&app=INVENTORY&returnmodule=Project&returnview=Detail&returnrecord={$smarty.request.materialsProjectId|escape:'url'}&returntab_label={$MATERIALS_RETURN_TAB|escape:'url'}">
+                <i class="fa fa-plus"></i>&nbsp;Aggiungi Materiali
+            </a>
+        </div>
+    {/if}
     <div class="lineItemTableDiv">
         <table class="table table-bordered lineItemsTable" style = "margin-top:15px">
             <thead>

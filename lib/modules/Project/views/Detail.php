@@ -24,7 +24,12 @@ class Project_Detail_View extends Vtiger_Detail_View {
 	 * @param Vtiger_Request $request
 	 */
 	public function showMaterials(Vtiger_Request $request) {
-		$projectRecordModel = Vtiger_Record_Model::getInstanceById($request->get('record'), $request->getModule());
+		if (getenv('TM_FLAVOR') !== 'construction') {
+			return '';
+		}
+
+		$projectId = $request->get('record');
+		$projectRecordModel = Vtiger_Record_Model::getInstanceById($projectId, $request->getModule());
 
 		$userPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$salesOrderInstance = Vtiger_Module_Model::getInstance('SalesOrder');
@@ -48,6 +53,8 @@ class Project_Detail_View extends Vtiger_Detail_View {
 		$request->set('module', 'SalesOrder');
 		$request->set('record', $salesOrderId);
 		$request->set('requestMode', 'full');
+		// Keep the originating Project id so the line items template can build the "Aggiungi Materiali" button.
+		$request->set('materialsProjectId', $projectId);
 
 		$salesOrderViewClass = Vtiger_Loader::getComponentClassName('View', 'Detail', 'SalesOrder');
 		$salesOrderDetailView = new $salesOrderViewClass();
