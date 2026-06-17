@@ -218,6 +218,14 @@ class VTCreateEntityTask extends VTTask {
 			// To handle cyclic process
 			$newEntity->_from_workflow = true;
 			$newEntity->column_fields['source'] = 'WORKFLOW';
+
+			// Inventory modules (SalesOrder/Invoice/Quote/PurchaseOrder) rebuild their
+			// line items and calculated totals (total/subtotal) from $_REQUEST inside
+			// save_module(). In a workflow there are no line items in the request, so a
+			// plain save would delete the existing line items and zero the totals.
+			// Mirror VTUpdateFieldsTask and skip the line-item rebuild so manually
+			// entered materials/totals are preserved (especially on the upsert branch).
+			$newEntity->isLineItemUpdate = false;
 			try {
 
 				//If the module triggering workflow and new entity we are creating are same, Then it might end up in infinite loop.
