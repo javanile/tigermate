@@ -239,8 +239,13 @@
             </tbody>
         </table>
     </div>
+    {* Construction flavor: keep all rows in the DOM (PHP totals & JS popovers untouched) and only hide the
+       intermediate summary rows via CSS, leaving the final grand total visible. *}
+    {if getenv('TM_FLAVOR') eq 'construction'}
+        <style type="text/css">.lineItemsTable tr.lineItemSummaryRow { display: none; }</style>
+    {/if}
     <table class="table table-bordered lineItemsTable">
-        <tr>
+        <tr class="lineItemSummaryRow">
             <td width="83%">
                 <div class="pull-right">
                     <strong>{vtranslate('LBL_ITEMS_TOTAL',$MODULE_NAME)}</strong>
@@ -253,7 +258,7 @@
             </td>
         </tr>
         {if $DISCOUNT_AMOUNT_VIEWABLE || $DISCOUNT_PERCENT_VIEWABLE}
-            <tr>
+            <tr class="lineItemSummaryRow">
                 <td width="83%">
                     <div align="right">
                         {assign var=FINAL_DISCOUNT_INFO value="{vtranslate('LBL_FINAL_DISCOUNT_AMOUNT',$MODULE_NAME)} = {if $DISCOUNT_PERCENT_VIEWABLE && $FINAL_DETAILS['discount_type_final'] == 'percentage'} {$FINAL_DETAILS['discount_percentage_final']}	% {vtranslate('LBL_OF',$MODULE_NAME)} {$FINAL_DETAILS['hdnSubTotal']} = {/if}{$FINAL_DETAILS['discountTotal_final']}"}
@@ -269,7 +274,7 @@
             </tr>
         {/if}
         {if $SH_PERCENT_VIEWABLE}
-            <tr>
+            <tr class="lineItemSummaryRow">
                 <td width="83%">
                     <div align="right">
                         {assign var=CHARGES_INFO value="{vtranslate('LBL_TOTAL_AFTER_DISCOUNT',$MODULE_NAME)} = {$FINAL_DETAILS['totalAfterDiscount']}<br /><br />{foreach key=CHARGE_ID item=CHARGE_INFO from=$SELECTED_CHARGES_AND_ITS_TAXES} {if $CHARGE_INFO['deleted']}({strtoupper(vtranslate('LBL_DELETED',$MODULE_NAME))}){/if} {$CHARGE_INFO['name']} {if $CHARGE_INFO['percent']}: {$CHARGE_INFO['percent']}% {vtranslate('LBL_OF',$MODULE_NAME)} {$FINAL_DETAILS['totalAfterDiscount']}{/if} = {$CHARGE_INFO['amount']}<br />{/foreach}<br /><h5>{vtranslate('LBL_CHARGES_TOTAL',$MODULE_NAME)} = {$FINAL_DETAILS['shipping_handling_charge']}</h5>"}
@@ -283,7 +288,7 @@
                 </td>
             </tr>
         {/if}
-        <tr>
+        <tr class="lineItemSummaryRow">
             <td width="83%">
                 <div align="right">
                     <strong>{vtranslate('LBL_PRE_TAX_TOTAL', $MODULE_NAME)} </strong>
@@ -296,7 +301,7 @@
             </td>
         </tr>
         {if $FINAL_DETAILS.taxtype eq 'group'}
-            <tr>
+            <tr class="lineItemSummaryRow">
                 <td width="83%">
                     <div align="right">
                         {assign var=GROUP_TAX_INFO value="{vtranslate('LBL_TOTAL_AFTER_DISCOUNT',$MODULE_NAME)} = {$FINAL_DETAILS['totalAfterDiscount']}<br /><br />{foreach item=tax_details from=$FINAL_DETAILS['taxes']}{$tax_details['taxlabel']} : \t{$tax_details['percentage']}% {vtranslate('LBL_OF',$MODULE_NAME)} {if $tax_details['method'] eq 'Compound'}({/if}{$FINAL_DETAILS['totalAfterDiscount']}{if $tax_details['method'] eq 'Compound'}{foreach item=COMPOUND_TAX_ID from=$tax_details['compoundon']}{if $FINAL_DETAILS['taxes'][$COMPOUND_TAX_ID]['taxlabel']} + {$FINAL_DETAILS['taxes'][$COMPOUND_TAX_ID]['taxlabel']}{/if}{/foreach}){/if} = {$tax_details['amount']}<br />{/foreach}<br />{vtranslate('LBL_TOTAL_TAX_AMOUNT',$MODULE_NAME)} = {$FINAL_DETAILS['tax_totalamount']}"}
@@ -311,7 +316,7 @@
             </tr>
         {/if}
         {if $SH_PERCENT_VIEWABLE}
-            <tr>
+            <tr class="lineItemSummaryRow">
                 <td width="83%">
                     <div align="right">
                         {assign var=CHARGES_TAX_INFO value="{vtranslate('LBL_CHARGES_TOTAL',$MODULE_NAME)} = {$FINAL_DETAILS["shipping_handling_charge"]}<br /><br />{foreach key=CHARGE_ID item=CHARGE_INFO from=$SELECTED_CHARGES_AND_ITS_TAXES}{if $CHARGE_INFO['taxes']}{if $CHARGE_INFO['deleted']}({strtoupper(vtranslate('LBL_DELETED',$MODULE_NAME))}){/if} {$CHARGE_INFO['name']}<br />{foreach item=CHARGE_TAX_INFO from=$CHARGE_INFO['taxes']}&emsp;{$CHARGE_TAX_INFO['name']}: &emsp;{$CHARGE_TAX_INFO['percent']}% {vtranslate('LBL_OF',$MODULE_NAME)} {if $CHARGE_TAX_INFO['method'] eq 'Compound'}({/if}{$CHARGE_INFO['amount']} {if $CHARGE_TAX_INFO['method'] eq 'Compound'}{foreach item=COMPOUND_TAX_ID from=$CHARGE_TAX_INFO['compoundon']}{if $CHARGE_INFO['taxes'][$COMPOUND_TAX_ID]['name']} + {$CHARGE_INFO['taxes'][$COMPOUND_TAX_ID]['name']}{/if}{/foreach}){/if} = {$CHARGE_TAX_INFO['amount']}<br />{/foreach}<br />{/if}{/foreach}\r\n{vtranslate('LBL_TOTAL_TAX_AMOUNT',$MODULE_NAME)} = {$FINAL_DETAILS['shtax_totalamount']}"}
@@ -326,7 +331,7 @@
                 </td>
             </tr>
         {/if}
-        <tr>
+        <tr class="lineItemSummaryRow">
             <td width="83%">
                 <div align="right">
                     {assign var=DEDUCTED_TAXES_INFO value="{vtranslate('LBL_TOTAL_AFTER_DISCOUNT',$MODULE_NAME)} = {$FINAL_DETAILS["totalAfterDiscount"]}<br /><br />{foreach key=DEDUCTED_TAX_ID item=DEDUCTED_TAX_INFO from=$FINAL_DETAILS['deductTaxes']}{if $DEDUCTED_TAX_INFO['selected'] eq true}{$DEDUCTED_TAX_INFO['taxlabel']}: \t{$DEDUCTED_TAX_INFO['percentage']}%  = {$DEDUCTED_TAX_INFO['amount']}\r\n{/if}{/foreach}\r\n\r\n{vtranslate('LBL_DEDUCTED_TAXES_TOTAL',$MODULE_NAME)} = {$FINAL_DETAILS['deductTaxesTotalAmount']}"}
@@ -340,7 +345,7 @@
                 </div>
             </td>
         </tr>
-        <tr>
+        <tr class="lineItemSummaryRow">
             <td width="83%">
                 <div align="right">
                     <strong>{vtranslate('LBL_ADJUSTMENT',$MODULE_NAME)}</strong>
