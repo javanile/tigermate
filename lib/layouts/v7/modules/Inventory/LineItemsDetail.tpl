@@ -199,14 +199,14 @@
                                     {$LINE_ITEM_DETAIL["listPrice$INDEX"]}
                                 </div>
                                 {if $ITEM_DISCOUNT_AMOUNT_VIEWABLE || $ITEM_DISCOUNT_PERCENT_VIEWABLE}
-                                    <div>
+                                    <div class="lineItemDiscountRow">
                                         {assign var=DISCOUNT_INFO value="{if $LINE_ITEM_DETAIL["discount_type$INDEX"] == 'amount'} {vtranslate('LBL_DIRECT_AMOUNT_DISCOUNT',$MODULE_NAME)} = {$LINE_ITEM_DETAIL["discountTotal$INDEX"]}
 									{elseif $LINE_ITEM_DETAIL["discount_type$INDEX"] == 'percentage'} {$LINE_ITEM_DETAIL["discount_percent$INDEX"]} % {vtranslate('LBL_OF',$MODULE_NAME)} {$LINE_ITEM_DETAIL["productTotal$INDEX"]} = {$LINE_ITEM_DETAIL["discountTotal$INDEX"]}
 									{/if}"}
                                         (-)&nbsp; <strong><a href="javascript:void(0)" class="individualDiscount inventoryLineItemDetails" tabindex="0" role="tooltip" id ="example" data-toggle="popover" data-trigger="focus" title="{vtranslate('LBL_DISCOUNT',$MODULE_NAME)}" data-content="{$DISCOUNT_INFO}">{vtranslate('LBL_DISCOUNT',$MODULE_NAME)}</a> : </strong>
                                     </div>
                                 {/if}
-                                <div>
+                                <div class="lineItemDiscountRow">
                                     <strong>{vtranslate('LBL_TOTAL_AFTER_DISCOUNT',$MODULE_NAME)} :</strong>
                                 </div>
                                 {if $FINAL_DETAILS.taxtype neq 'group'}
@@ -221,9 +221,9 @@
                         <td>
                             <div align = "right">{$LINE_ITEM_DETAIL["productTotal$INDEX"]}</div>
                             {if $ITEM_DISCOUNT_AMOUNT_VIEWABLE || $ITEM_DISCOUNT_PERCENT_VIEWABLE}
-                                <div align = "right">{$LINE_ITEM_DETAIL["discountTotal$INDEX"]}</div>           
+                                <div align = "right" class="lineItemDiscountRow">{$LINE_ITEM_DETAIL["discountTotal$INDEX"]}</div>
                             {/if}
-                            <div align = "right">{$LINE_ITEM_DETAIL["totalAfterDiscount$INDEX"]}</div>
+                            <div align = "right" class="lineItemDiscountRow">{$LINE_ITEM_DETAIL["totalAfterDiscount$INDEX"]}</div>
                             {if $FINAL_DETAILS.taxtype neq 'group'}
                                 <div align = "right">{$LINE_ITEM_DETAIL["taxTotal$INDEX"]}</div>
                             {/if}
@@ -239,10 +239,11 @@
             </tbody>
         </table>
     </div>
-    {* Construction flavor: keep all rows in the DOM (PHP totals & JS popovers untouched) and only hide the
-       intermediate summary rows via CSS, leaving the final grand total visible. *}
+    {* Construction flavor: keep all rows in the DOM (PHP totals & JS popovers untouched) and only hide via CSS
+       the intermediate summary rows and the per-line discount/after-discount items, leaving the final grand total. *}
     {if getenv('TM_FLAVOR') eq 'construction'}
-        <style type="text/css">.lineItemsTable tr.lineItemSummaryRow { display: none; }</style>
+        <style type="text/css">.lineItemsTable tr.lineItemSummaryRow,
+        .lineItemsTable .lineItemDiscountRow { display: none; }</style>
     {/if}
     <table class="table table-bordered lineItemsTable">
         <tr class="lineItemSummaryRow">
