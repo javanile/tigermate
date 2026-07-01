@@ -29,6 +29,11 @@
 </style>
 {if !empty($PROJECT_TASKS['tasks'])}
     <div class="pull-right" style="margin-right: 5px;">
+        <span id="ganttOwnerFilterContainer" style="margin: 2px; display: inline-block;">
+            <select id="ganttOwnerFilter" class="form-control input-sm" style="width: 220px;" disabled="disabled">
+                <option value="">Assegnato a: tutti</option>
+            </select>
+        </span>
         <span style="margin: 2px;">
             <button class="btn textual zoomOut" title="zoom out">
                 <span class="teamworkIcon">)</span>
@@ -278,7 +283,12 @@
     </div>
     {/if}
     <script type="text/javascript">
+        var ganttParentId = '{$PARENT_ID}';
+        var ganttModuleName = '{$MODULE}';
+        {literal}
         jQuery(document).ready(function($) {
+            var ganttOwnerFilterInitialized = false;
+
             function resizeGanttWorkspace() {
                 var $ws = $('#workSpace');
                 if ($ws.length === 0) return;
@@ -295,7 +305,193 @@
                 $(this).toggleClass('active');
                 $('#ganttLegendPanel').slideToggle(resizeGanttWorkspace);
             });
+
+            function getOriginalGanttData() {
+                var source = $('#originalprojecttasks').val() || $('#projecttasks').val();
+                if (!source) {
+                    return null;
+                }
+                try {
+                    return JSON.parse(source);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function cloneGanttData(data) {
+                return JSON.parse(JSON.stringify(data));
+            }
+
+            function normalizeOwnerLabel(label) {
+                label = $.trim(label || '');
+                label = label.replace(/\s+/g, ' ');
+                if (!label || /^----/.test(label)) {
+                    return 'Non assegnato';
+                }
+                return label;
+            }
+
+            function getTaskModuleName(task) {
+                return task.type === 'milestone' ? 'ProjectMilestone' : 'ProjectTask';
+            }
+
+            function extractOwnerLabel(html) {
+                var nodes = $.parseHTML(html, document, false) || [];
+                var $html = $('<div></div>').append(nodes);
+                var $selectedOwner = $html.find('select[name="assigned_user_id"] option:selected').first();
+                return normalizeOwnerLabel($selectedOwner.text());
+            }
+
+            function fetchOwnerLabel(task) {
+                var requestData;
+                if (task.type === 'milestone') {
+                    requestData = {
+                        module: 'ProjectMilestone',
+                        view: 'Edit',
+                        record: task.recordid,
+                        app: 'PROJECT'
+                    };
+                } else {
+                    requestData = {
+                        module: 'ProjectTask',
+                        view: 'QuickEditAjax',
+                        record: task.recordid,
+                        parentid: ganttParentId,
+                        returnview: 'Detail',
+                        returnmode: 'showChart',
+                        returnmodule: ganttModuleName,
+                        returnrecord: ganttParentId
+                    };
+                }
+
+                return $.ajax({
+                    url: 'index.php',
+                    type: 'GET',
+                    data: requestData,
+                    cache: true
+                }).then(function(html) {
+                    return extractOwnerLabel(html);
+                }, function() {
+                    return 'Non assegnato';
+                });
+            }
+
+            function populateOwnerFilter(data) {
+                var $filter = $('#ganttOwnerFilter');
+                var owners = {};
+                $.each(data.tasks || [], function(_, task) {
+                    var ownerLabel = normalizeOwnerLabel(task.ownerLabel);
+                    owners[ownerLabel] = true;
+                });
+
+                var sortedOwners = Object.keys(owners).sort(function(a, b) {
+                    a = a.toLowerCase();
+                    b = b.toLowerCase();
+                    if (a < b) {
+                        return -1;
+                    }
+                    if (a > b) {
+                        return 1;
+                    }
+                    return 0;
+                });
+
+                $filter.empty();
+                $filter.append('<option value="">Assegnato a: tutti</option>');
+                $.each(sortedOwners, function(_, ownerLabel) {
+                    var $option = $('<option></option>').val(ownerLabel).text(ownerLabel);
+                    $filter.append($option);
+                });
+                $filter.prop('disabled', false);
+            }
+
+            function applyOwnerFilter() {
+                var sourceData = window.tmGanttOwnerData || getOriginalGanttData();
+                var selectedOwner = $('#ganttOwnerFilter').val();
+                if (!sourceData) {
+                    return;
+                }
+
+                var filteredData = cloneGanttData(sourceData);
+                if (selectedOwner) {
+                    filteredData.tasks = $.grep(filteredData.tasks || [], function(task) {
+                        return normalizeOwnerLabel(task.ownerLabel) === selectedOwner;
+                    });
+                }
+
+                $('#projecttasks').val(JSON.stringify(filteredData));
+                if (window.Project_Detail_Js && Project_Detail_Js.gantt) {
+                    Project_Detail_Js.gantt.loadProject(filteredData);
+                    Project_Detail_Js.gantt.checkpoint();
+                }
+                resizeGanttWorkspace();
+            }
+
+            function initOwnerFilter() {
+                if (ganttOwnerFilterInitialized) {
+                    return;
+                }
+
+                var originalData = getOriginalGanttData();
+                if (!originalData || !originalData.tasks || !originalData.tasks.length) {
+                    return;
+                }
+
+                ganttOwnerFilterInitialized = true;
+                var $filter = $('#ganttOwnerFilter');
+                var uniqueTasks = [];
+                var seenTasks = {};
+
+                $.each(originalData.tasks, function(_, task) {
+                    if (!task.recordid) {
+                        return;
+                    }
+                    var taskKey = getTaskModuleName(task) + ':' + task.recordid;
+                    if (seenTasks[taskKey]) {
+                        return;
+                    }
+                    seenTasks[taskKey] = true;
+                    uniqueTasks.push(task);
+                });
+
+                if (!uniqueTasks.length) {
+                    $filter.prop('disabled', true);
+                    return;
+                }
+
+                $filter.empty().append('<option value="">Caricamento assegnati...</option>');
+
+                var ownerRequests = $.map(uniqueTasks, function(task) {
+                    return fetchOwnerLabel(task).then(function(ownerLabel) {
+                        task.ownerLabel = ownerLabel;
+                    });
+                });
+
+                $.when.apply($, ownerRequests).always(function() {
+                    var ownerByTask = {};
+                    $.each(uniqueTasks, function(_, task) {
+                        var taskKey = getTaskModuleName(task) + ':' + task.recordid;
+                        ownerByTask[taskKey] = normalizeOwnerLabel(task.ownerLabel);
+                    });
+
+                    $.each(originalData.tasks, function(_, task) {
+                        var taskKey = getTaskModuleName(task) + ':' + task.recordid;
+                        task.ownerLabel = ownerByTask[taskKey] || 'Non assegnato';
+                    });
+
+                    window.tmGanttOwnerData = originalData;
+                    populateOwnerFilter(originalData);
+                    applyOwnerFilter();
+                });
+            }
+
+            $('#ganttOwnerFilter').on('change', function() {
+                applyOwnerFilter();
+            });
+
+            setTimeout(initOwnerFilter, 300);
         });
+        {/literal}
     </script>
 {else} 
     <table class="emptyRecordsDiv">

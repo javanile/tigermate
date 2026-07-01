@@ -33,12 +33,17 @@ class ModComments_FilePreview_View extends Vtiger_IndexAjax_View {
 		$attachments = $recordModel->getFileDetails($attachmentId);
 		$fileDetails = $attachments[0];
 		$fileContent = false;
+		$downloadUrl = '';
+		$trimmedFileName = '';
 		if (!empty($fileDetails)) {
 			$filePath = $fileDetails['path'];
 			$fileName = $fileDetails['name'];
-            $storedFileName = $fileDetails['storedname'];
+			$storedFileName = $fileDetails['storedname'];
 			$fileName = html_entity_decode($fileName, ENT_QUOTES, vglobal('default_charset'));
 			$savedFile = $fileDetails['attachmentsid']."_".$storedFileName;
+			if (empty($storedFileName)) {
+				$savedFile = $fileDetails['attachmentsid']."_".$fileName;
+			}
 
 			$fileSize = filesize($filePath.$savedFile);
 			$fileSize = $fileSize + ($fileSize % 1024);
@@ -46,6 +51,9 @@ class ModComments_FilePreview_View extends Vtiger_IndexAjax_View {
 			if (fopen($filePath.$savedFile, "r")) {
 				$fileContent = fread(fopen($filePath.$savedFile, "r"), $fileSize);
 			}
+
+			$downloadUrl = $recordModel->getDownloadFileURL($attachmentId);
+			$trimmedFileName = $recordModel->trimFileName($fileDetails['name']);
 		}
 
 		$type = $fileDetails['type'];
@@ -56,12 +64,17 @@ class ModComments_FilePreview_View extends Vtiger_IndexAjax_View {
                     $fileDetails = $recordModel->getFileNameAndDownloadURL($recordId, $attachmentId);
                     $downloadUrl =  $recordModel->getDownloadFileURL($attachmentId);
                     $trimmedFileName = $fileDetails[0]['trimmedFileName'];
+                } else if (empty($downloadUrl) && !empty($attachmentId)) {
+                    $downloadUrl =  $recordModel->getDownloadFileURL($attachmentId);
+                    if (empty($trimmedFileName) && !empty($filename)) {
+                        $trimmedFileName = $recordModel->trimFileName($filename);
+                    }
                 }
 
 		//support for plain/text document
 		$extn = 'txt';
 		if (php7_count($parts) > 1) {
-			$extn = end($parts);
+			$extn = strtolower(end($parts));
 		}
 		$viewer = $this->getViewer($request);
 		$viewer->assign('MODULE_NAME', $moduleName);
