@@ -649,6 +649,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						// Update cache state with new value added.
 						$wsFieldDetails[] = array('label' => $fieldValue, 'value' => $fieldValue);
 						Vtiger_Cache::getInstance()->setPicklistDetails($moduleObject->getId(), $fieldName, $wsFieldDetails);
+						$fieldData[$fieldName] = $fieldValue;
 
 						unset($this->allPicklistValues[$fieldName]);
 					}

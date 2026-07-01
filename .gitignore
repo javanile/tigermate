@@ -21,6 +21,9 @@
 /lib/config.inc.php
 /lib/tabdata.php
 /lib/test/logo/favicon.ico
+/lib/storage/
+!/lib/storage/.htaccess
+!/lib/storage/vtiger.txt
 
 /.hosts
 /.env
