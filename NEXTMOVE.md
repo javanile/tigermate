@@ -451,3 +451,85 @@ dall'addon di `uitypes/Percentage.tpl`).
 - `update_wf43_corrective.py` — wf43 correttivo (cf_942 + ricalcolo totali/MOL/MOL%, con fix lavorazioni deleted).
 - `update_wf36_extra.py` / `update_wf33_extra.py` — aggiungono Ricavo/Costo Extra + Materiali ai totali cantiere.
 - `add_mol_pct.py` — aggiunge il calcolo `cf_940` (MOL%) all'UPDATE finale di wf33 (task 38) e wf36 (task 40).
+
+---
+
+# TODO FUTURO — Unità di misura (Usage Unit) nei line item dei documenti
+
+> Idea emersa il 2026-06-19. Annullata per ora (non implementata), salvata qui come prossima mossa.
+
+## Contesto / scoperta
+Il concetto di unità di misura esiste **già in forma latente**, ma solo a livello di anagrafica,
+non sui line item dei documenti (preventivi/ordini/fatture).
+
+**Cosa c'è già:**
+- Prodotti: campo `usageunit`, etichetta "Usage Unit", **uitype 15 = picklist**,
+  colonna `vtiger_products.usageunit`. Valori nella tabella `vtiger_usageunit`
+  (`Box, Carton, Dozen, Each, Hours, Impressions, Lb, M, Pack, Pages, Pieces, Quantity,
+  Reams, Sheet, Spiral Binder, Sq Ft`). Picklist standard → **personalizzabile**
+  (aggiungere `Litri`, `Kg`, `Metri quadri`, `Metri lineari`, ecc. dall'editor picklist o seed su `vtiger_usageunit`).
+- Servizi: campo `service_usageunit`, "Usage Unit", uitype 15 (picklist), valori `Hours, Days, Incidents`.
+- `qty_per_unit` ("Qty/Unit"), uitype 1 = **testo libero** (non picklist), su prodotti e servizi.
+- Entrambi i campi `usageunit`/`service_usageunit` hanno `presence=2` (attivi).
+
+**Cosa NON c'è (il limite):**
+- La tabella line item `vtiger_inventoryproductrel` **non ha** colonna `usageunit`/`unit`
+  (solo: `productid, quantity, listprice, discount_*, tax1/2/3, comment, description, purchase_cost, margin`).
+- `lib/modules/Inventory/models/Record.php::getProducts()` carica solo `unitPrice` (= listPrice),
+  **non** legge l'`usageunit` del prodotto.
+- Nessun template line item (`LineItemsEdit.tpl` / `LineItemsDetail.tpl`) mostra l'unità.
+
+In pratica: il sistema "sa" che il prodotto X è in Litri (è sulla scheda prodotto), ma quell'info
+**non compare** nella riga del documento né viene salvata per-riga.
+
+## Soluzione A — Versione informativa (bassissimo impatto, da iniziare qui)
+Mostrare l'unità accanto alla quantità, **leggendola dall'anagrafica prodotto**.
+Zero modifiche a DB/PHP/JS, tutto in `lib/layouts/v7/modules/Inventory/LineItemsDetail.tpl`,
+cella `{if $QUANTITY_VIEWABLE}`. Bozza già validata (tag bilanciati):
+
+```smarty
+{if $QUANTITY_VIEWABLE}
+    <td>
+        {$LINE_ITEM_DETAIL["qty$INDEX"]}
+        {* Unità di misura informativa letta dall'anagrafica (picklist "Usage Unit"). Solo display. *}
+        {if !$LINE_ITEM_DETAIL["productDeleted$INDEX"]}
+            {assign var=UOM_RECORD value=Vtiger_Record_Model::getInstanceById($LINE_ITEM_DETAIL["hdnProductId$INDEX"], $LINE_ITEM_DETAIL["entityType$INDEX"])}
+            {if $LINE_ITEM_DETAIL["entityType$INDEX"] eq 'Services'}
+                {assign var=UOM value=$UOM_RECORD->get('service_usageunit')}
+            {else}
+                {assign var=UOM value=$UOM_RECORD->get('usageunit')}
+            {/if}
+            {if $UOM}<span class="text-muted lineItemUom">&nbsp;{$UOM|escape}</span>{/if}
+        {/if}
+    </td>
+{/if}
+```
+
+Scelte aperte:
+- **Gate flavor:** limitare al construction con `{if getenv('TM_FLAVOR') eq 'construction' && ...}`
+  (stesso pattern dello `<style>` già presente nel file) oppure mostrarlo in tutti i flavor (è additivo).
+- **Costo:** una `getInstanceById` per riga in Detail (poche righe → trascurabile). Vedi A-bis se infastidisce.
+- **Estendere alla vista Edit** (`LineItemsEdit.tpl`) per vederlo mentre si compila il preventivo, non solo in Detail.
+- Pattern `getInstanceById` in template già usato in questo codebase (es. `Documents/DocumentsRelatedList.tpl`).
+- vtiger usa **SmartyBC** + funzioni PHP nei template abilitate (es. `vtranslate`, `strtoupper`),
+  quindi `getenv()` nel template è coerente con l'esistente. (Un lint con `new Smarty()` standalone
+  fallisce su `vtranslate` perché fuori dal contesto vtiger: NON è indicativo, ignorarlo.)
+
+## Soluzione A-bis — Variante più leggera (no record-model per riga)
+Popolare l'unità una volta sola lato PHP in `Inventory/models/Record.php::getProducts()` (loop dove
+`$productId` è già disponibile), aggiungendo chiave additiva `$relatedProducts[$i]['usageunit'.$i]`
+con una mini-query productId→usageunit; nel template usare `{$LINE_ITEM_DETAIL["usageunit$INDEX"]}`.
+Più efficiente, ma tocca un file PHP (additivo, non invasivo).
+⚠️ **NON** modificare `getAssociatedProducts()` in `lib/include/utils/EditViewUtils.php`
+(funzione condivisa e complessa → rischio alto).
+
+## Soluzione B — Versione "piena" (per-riga, con override)
+Unità salvata per ogni riga, con override rispetto all'anagrafica:
+- Colonna `usageunit` su `vtiger_inventoryproductrel` (migrazione DB).
+- Save/load nei flussi inventory (Record model, salvataggio line item, edit JS).
+- UI: picklist per riga in `LineItemsEdit.tpl`.
+Impatto alto (DB + PHP + JS). Solo se serve davvero l'unità per-riga e non quella ereditata dal prodotto.
+
+## Personalizzazione valori picklist per il construction
+Aggiungere a `usageunit` (e/o `service_usageunit`) i valori utili: `Litri`, `Kg`, `Quintali`,
+`Tonnellate`, `Metri`, `Metri quadri (m²)`, `Metri cubi (m³)`, `Ore`, `Giornate`, `Cad.` ecc.
